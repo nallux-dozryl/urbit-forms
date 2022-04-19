@@ -1,0 +1,10 @@
+:~  title+'Forms'
+    info+'Publish and Respond to Forms'
+    color+0x66.0066
+    image+'https://media.urbit.org/docs/userspace/dist/wut.svg'
+    base+'forms'
+    glob-ames+[~lux 0v0]
+    version+[0 0 1]
+    website+'https://gerhana.network'
+    license+'MIT'
+==
