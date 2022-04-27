@@ -47,7 +47,7 @@ already present in the booklet
 - Clicking publish will change the permission of the booklet from private to
  public
 - Respondents can access the booklet (without edit permissions) by putting in
-the address of the booklet. (eg. `~sampel-palnet/{id}/{title})`.
+the address of the booklet. (eg. `~sampel-palnet/{id}/{title}`).
 - This will result in the respondent subscribing to the path of the Booklet.
 
 ##### Responding to a Booklet
