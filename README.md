@@ -60,5 +60,5 @@ the address of the booklet. (eg. `~sampel-palnet/{id}/{title}`).
 - Individual pamphlets can be viewed in detail or exported as CSV
 
 ##### Deleting a Booklet
-- A booklet allowed to be deleted at anytime. This will also delete
- all submitted pamphlets stored on the same ship.
+- A booklet is allowed to be deleted at anytime. This will also delete
+ all submitted pamphlets under the same id stored on the same ship.
