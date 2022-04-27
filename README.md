@@ -58,3 +58,7 @@ the address of the booklet. (eg. `~sampel-palnet/{id}/{title})`.
 ##### View Received Pamphlets
 - Pamphlets will be stored on the Author's ship as a `(map id (set pamphlet))`
 - Individual pamphlets can be viewed in detail or exported as CSV
+
+##### Deleting a Booklet
+- A booklet allowed to be deleted at anytime. This will also delete
+ all submitted pamphlets stored on the same ship.
