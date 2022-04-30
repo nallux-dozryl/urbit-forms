@@ -30,7 +30,6 @@
     %0  `this(state old)
   ==
 ::
-::++  on-poke  on-poke:def
 ++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
