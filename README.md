@@ -101,6 +101,8 @@ the types of metadata allowed
       %long
       %one
       %many
+      %gone
+      %gmany
       %linear
       %datetime
   ==
