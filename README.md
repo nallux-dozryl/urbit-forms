@@ -121,20 +121,26 @@ the types of metadata allowed
 ```
 
 #### Pokes
-To be added
 
+###### Local Ship
+1. add - create a new survey
+2. edit - update a survey with new information
+3. delete - delete an existing survey from my-surveys
+
+###### Foreign Ship
+1. request - request for a survey
+2. respond - submit a response for a survey
 
 ### View
-Nothing yet
+`soon...`  
 
+**old stuff down here**
 
-### Old Stuff (ignore)
-
-##### Creating a Booklet
-- Click on the `new booklet` button
-- A prompted will show requesting for a `Title`, an optional `Description`
+#### Creating a Survey
+- Click on the `new form` button
+- A prompted will show requesting for a `title`, an optional `description`
  and a `create` button
-- Clicking on `create` will open an empty booklet with a set of buttons with
+- Clicking on `create` will open an empty survey with a set of buttons with
  different question types
 - Newly created booklets will be set to private by default.
 
