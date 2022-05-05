@@ -1,26 +1,123 @@
 # Urbit Forms
 Create forms and surveys with multiple question types.
 
-### Specifications
+### Agent
 
-##### General
-- "booklet" is a form it can have many sections
-- "section" can have multiple questions in them
-- "question" has two parts, statement and options
-- "statement" is the question being asked
-- "option" are for questions that has a preset list of answers
-- "pamphlet" is a map of answers
-- "Author" is the person who creates and publish booklets
-- "Respondent" is the person submiting a pamphlet to the Author 
+#### State
 
-##### Question Types:
-- short text 
-- long text
-- multiple choice (choose one)
-- multiple choice (checkbox)
-- multiple choice (grid)
-- linear scale (eg. 1 - 10)
-- Datetime
+###### $my-surveys
+surveys you authored.  
+```
++$  my-surveys  ((mop survey-id survey) gth)
+```
+
+###### $received-surveys
+surveys you've requested.
+```
++$  received-surveys(map ship ((mop survey-id survey) gth))
+```
+
+###### $my-responses
+responses you authored
+```
++$  my-responses  (map ship ((mop survey-id response) gth))
+```
+
+###### $received-responses
+responses received for surveys you have authored
+```
++$  received-respones  (map ship (map survey-id response))
+```
+
+#### Types
+
+###### $survey-id
+the unix timestamp of the time of creation
+```
++$  survey-id  @
+``` 
+
+###### $survey
+a survey can either be `%full`, with validation information
+ or `%obscured`, without validation information.
+```
++$  survey  
+  $%  $:  %full 
+          =validation
+          metadata=(set meta)
+          questions=((mop question-id question) gth)]
+      ==
+      $:  %obscured
+          metadata=(set meta)
+          questions=(list question)]
+      ==
+  ==
+```
+
+###### $validation
+``` 
++$  validation
+  $%  %none
+      (list val-type)
+  ==
+```
+
+###### $val-type
+```
++$  val-type
+  $%  [%noun @]
+      [%grid (set @]
+  ==
+```
+      
+###### $meta
+the types of metadata allowed
+```
++$  meta
+  $%  [%title tape]
+      [%desc tape]
+      [%pub ?]
+      :: more will be added eventually
+  ==
+```
+
+###### $question
+
+```
++$  statement
+  $%  [%text text=@t]
+      [%url url=@t]
+  ==
++$  option
+  $%  [%noun @]
+      [%grid (set @)]
+      %none
+  ==
++$  front-type
+  $?  %short
+      %long
+      %one
+      %many
+      %linear
+      %datetime
+
++$  question  [front-type =statement options=(set option)]
+```
+
+###### $response
+```
++$  response  (list option) 
+```
+
+#### Pokes
+To be added
+
+
+### View
+Nothing yet
+
+
+### Old Stuff (ignore)
 
 ##### Creating a Booklet
 - Click on the `new booklet` button
