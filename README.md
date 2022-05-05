@@ -82,17 +82,20 @@ the types of metadata allowed
 ```
 
 ###### $question
+```
++$  question  [front-type =statement options=(set option)]
+```
 
+###### $statement
 ```
 +$  statement
   $%  [%text text=@t]
       [%url url=@t]
   ==
-+$  option
-  $%  [%noun @]
-      [%grid (set @)]
-      %none
-  ==
+```
+
+###### $front-type
+```
 +$  front-type
   $?  %short
       %long
@@ -100,8 +103,16 @@ the types of metadata allowed
       %many
       %linear
       %datetime
+  ==
+```
 
-+$  question  [front-type =statement options=(set option)]
+###### $option
+```
++$  option
+  $%  [%noun @]
+      [%grid (set @)]
+      %none
+  ==
 ```
 
 ###### $response
