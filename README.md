@@ -27,7 +27,7 @@ This is a mop of `survey-id` and a map of `author` and mop of `response-id` and 
 ```
 
 #### $survey
-A survey is a json containing:
+A survey is a json object containing:
 - `title`: `@t -> %s`
 - `description`: `@t -> %s`
 - `visibility`: `?(%public %private %team) -> %s`
@@ -35,17 +35,24 @@ A survey is a json containing:
 - `questions`: `((mop question-id question) gth) -> %o`
 
 #### $response
-A response is a json containing a mop of `question-id` and `answer` sorted by gth
+A response is a json object containing a mop of `question-id` and `answer` sorted by gth
 ```
 ((mop question-id answer) gth) -> %o
 ```
 
 #### $question
-lorem ipsum
+A question is a json object containing:
+- `title`: this is the question itself `@t -> %s`
+- `options`: these are the choices provided `set -> %a of %s`
+- `front`: the component type that gets rendered in the view `@tas -> %s`
+- `back`: the type of value the agent accepts for this question `@tas -> %s`
 
 #### $answer
-lorem ipsum
-
+An answer is a json object with the back type as the key and the written answer
+ as the value.
+```
+eg. [%o p={[p='noun' q=[%s p='this is my answer']]}]
+```
 
 ### Actions
 lorem ipsum
