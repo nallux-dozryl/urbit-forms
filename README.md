@@ -122,8 +122,8 @@ _**Note:**_ Result is a noun, this will be used when validation is a thing. Unti
 
 #### Survey
 1. `/x/surveys/all` - Retrieves all `survey`s in `$surveys`.
-2. `/x/surveys/[ship] - Retrieves all `survey`s authored by the selected ship.
-3. `/x/survey/[survey-id] - Retrieves a specific survey
+2. `/x/surveys/[ship]` - Retrieves all `survey`s authored by the selected ship.
+3. `/x/survey/[survey-id]` - Retrieves a specific survey
 
 #### Response
 1. `/x/responses/[survey-id]` - Retrieves all responses for a specific form.
