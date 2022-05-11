@@ -197,7 +197,6 @@ Below all that are the questions itself. At the bottom of the survey, there is a
 
 ![responding](screenshots/responding.png)
 
-```
 ## Deliverables and Funding
 
 ### Milestone 1 - 1 Star
