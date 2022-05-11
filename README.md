@@ -200,11 +200,11 @@ Below all that are the questions itself. At the bottom of the survey, there is a
 ## Deliverables and Funding
 
 ### Milestone 1 - 1 Star
-1. The agent should be able to
+- The agent should be able to
   - Send, receive, edit and delete surveys.
   - Submit, receive and delete responses.
-2. A working front-end with the features outlined in the screenshots above.
-3. 9 front end question types
+- A working front-end with the features outlined in the screenshots above.
+- 9 front end question types
   - short text
   - paragraph
   - multiple choice (select one)
@@ -216,11 +216,11 @@ Below all that are the questions itself. At the bottom of the survey, there is a
   - datetime
 
 ### Milestone 2 - 1 Star
-1. Improved front-end
-2. CSV export
-3. Validation
-4. Multiple editors in one survey
-5. Anonymous survey -- Earth facing mirror
+- Improved front-end
+- CSV export
+- Validation
+- Multiple editors in one survey
+- Anonymous survey -- Earth facing mirror
 
 ## Miscellaneous
 
