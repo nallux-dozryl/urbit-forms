@@ -139,39 +139,89 @@ _**Note:**_ Result is a noun, this will be used when validation is a thing. Unti
 
 ## View
 
+The term `form` and `survey` will be used interchangably below. This is because the agent uses
+`survey` but the term `form` is more commonly used in the real world.
+
 ### Home Page
 
 When opening the app, you will be greeted by the homepage. On the topmost of the page,
  there is a search bar. This is for requesting a survey from another ship. Below that,
- the list of all the surveys in your survey store is displayed. Each item displays the
- title of the survey as well as a dropdown arrow. Clicking on the item itself will
- open the survey for responding.  
+ is the `+ Create` button. After that, a list of all the surveys in your survey
+ store. Each item displays the title of the survey as well as a dropdown arrow. Clicking
+ on the item itself will open the survey for responding.  
 
-By clicking on the arrow, you will be presented with edit, respond, delete and clone. If you do not own
- the survey, you will not be able to edit it.
+By clicking on the arrow, you will be presented with edit, respond, delete and clone. If you
+ do not own the survey, you will not be able to edit it.
 
 ![homepage](screenshots/homepage.png)
 
 ### New Form
 
+After clicking on the `+ Create` button in the home page, you will be directed to this page.
+ The title and description of the survey will by default `Untitled Form` and
+ `enter description here` respectively. This can be changed.
+
+Next, there are three tabs displayed. The first is this page, `questions`. Then there is
+ `responses` and `settings`.
+
+If there are no questions, only the buttons at the bottom of the screen will show. `+` is for
+ adding a new question, and the floppy disk icon is the save button. Clicking this will update
+ the state of your agent.
+
 ![new-form](screenshots/new-form.png)
-```
-::::::::::::::::::::::::::
-::                      ::
-::  GIANT PLACEHOLDER   ::
-::                      ::
-::::::::::::::::::::::::::
+
+### Responses
+
+Here, we see a similar layout to `New Form`, except the questions do not have options you can
+ change. At the bottom of the screen, there are two buttons indicating `previous` and `next`
+ with numbers showing the current and total reponses in between them. These buttons allow you to
+ cycle between the different responses that have been submitted to you.
+
+![reponses](screenshots/responses.png)
+
+### Settings
+
+This is the settings menu. You get to switch the visibility of the survey and modify the slug of
+ the survey.
+
+![settings](screenshots/settings.png)
+
+### Responding
+
+This is the page you see when you click on any of the surveys in the home page. You will be
+ presented with the title and description of the survey, with the address of the survey next
+ to it.
+
+Below all that are the questions itself. At the bottom of the survey, there is a submit button.
+ Clickng on `submit` will send your response to the author of the survey.
+
+![responding](screenshots/responding.png)
+
 ```
 ## Deliverables and Funding
 
 ### Milestone 1 - 1 Star
-1. Complete core functionality as laid out above.
+1. The agent should be able to
+  - Send, receive, edit and delete surveys.
+  - Submit, receive and delete responses.
+2. A working front-end with the features outlined in the screenshots above.
+3. 9 front end question types
+  - short text
+  - paragraph
+  - multiple choice (select one)
+  - multiple choice (select many)
+  - linear scale (discrete)
+  - linear scale (continuous)
+  - multiple choice grid (select one)
+  - multiple choice grid (select many)
+  - datetime
 
 ### Milestone 2 - 1 Star
-1. Improved GUI
-2. Validation
-3. Multiple editors in one survey
-4. Anonymous survey -- Earth facing mirror
+1. Improved front-end
+2. CSV export
+3. Validation
+4. Multiple editors in one survey
+5. Anonymous survey -- Earth facing mirror
 
 ## Miscellaneous
 
