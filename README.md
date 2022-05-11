@@ -74,6 +74,7 @@ All possible actions the agent accepts.
       [%delete survey-id]
       [%edit edit]
       [%ask ship survey-id]
+      [%respond survey-id question-id answer]
       [%submit ship survey-id response]
   ==
 ```
@@ -104,9 +105,16 @@ q-action is defined as follows:
       [%mod question-id title options front back required]
   ==
 ```
-_**Note:**_ Modifyig a question will delete the question and recreate
+_**Note:**_ Modifying a question will delete the question and recreate
  the question. I'm implementing it this way for simplicity. Open for
  comments.
+
+#### %ask
+Pokes the author ship to get a survey.
+
+#### %respond
+This puts an answer in the response and thus building the final response that will be sent
+ to the survey author via %submit
 
 ### Updates
 Updates are pretty straightforward in this agent. You either send out a `survey` or a `result`.
@@ -130,6 +138,23 @@ _**Note:**_ Result is a noun, this will be used when validation is a thing. Unti
 2. `/x/responses/[survey-id]/[ship]` - Retrieves all responses from a specific ship for a specific form.
 
 ## View
+
+### Home Page
+
+When opening the app, you will be greeted by the homepage. On the topmost of the page,
+ there is a search bar. This is for requesting a survey from another ship. Below that,
+ the list of all the surveys in your survey store is displayed. Each item displays the
+ title of the survey as well as a dropdown arrow. Clicking on the item itself will
+ open the survey for responding.  
+
+By clicking on the arrow, you will be presented with edit, respond, delete and clone. If you do not own
+ the survey, you will not be able to edit it.
+
+![homepage](screenshots/homepage.png)
+
+### New Form
+
+![new-form](screenshots/new-form.png)
 ```
 ::::::::::::::::::::::::::
 ::                      ::
