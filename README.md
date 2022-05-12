@@ -200,6 +200,7 @@ Below all that are the questions itself. At the bottom of the survey, there is a
 ## Deliverables and Funding
 
 ### Milestone 1 - 1 Star
+- Completion: 11 June 2022 (1 month)
 - The agent should be able to
   - Send, receive, edit and delete surveys.
   - Submit, receive and delete responses.
@@ -216,6 +217,7 @@ Below all that are the questions itself. At the bottom of the survey, there is a
   - datetime
 
 ### Milestone 2 - 1 Star
+- Completion: 11 July 2022 (1 month)
 - Improved front-end
 - CSV export
 - Validation
