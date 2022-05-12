@@ -1,10 +1,11 @@
-:~  title+'Forms'
-    info+'Publish and Respond to Forms'
-    color+0x66.0066
-    image+'https://media.urbit.org/docs/userspace/dist/wut.svg'
-    base+'forms'
-    glob-ames+[~lux 0v0]
-    version+[0 0 1]
-    website+'https://gerhana.network'
-    license+'MIT'
+:~
+  title+'Forms'
+  info+'Publish and Respond to Forms'
+  color+0x0
+  version+[0 0 2]
+  website+'https://gerhana.network'
+  license+'MIT'
+  image+'https://urbitas.sgp1.digitaloceanspaces.com/nallux-dozryl/2022.4.28..17.19.35-basic-menu-ui-svgrepo-com.svg'
+  base+'forms'
+  glob-ames+[~winter-nallux-dozryl 0v4.h714v.a3dl7.0plcq.aqq9q.0jma6]
 ==
