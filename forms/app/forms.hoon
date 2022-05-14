@@ -65,8 +65,12 @@
         ==  ==
         ::
         %request
-        ~|  'slug does not exist'
+        ~|  'form does not exist'
         =+  id=(need (~(get by slugs) slug.act))
+        =+  survs=(need (~(get by shelf) our.bowl))
+        =+  surv=^-(survey (need (get:s-orm survs id)))
+        =+  vis=(~(got by surv) 'visibility')
+        ?<  =(vis %private)
         :_  this
         :~  :*
           %pass   /survey
@@ -77,14 +81,14 @@
         %receive
         =/  new-pending  ^+  pending
           (~(del in pending) [src.bowl slug.act])
-        :_  this
+        :_  this(pending new-pending)
         :~  :*
           %pass   /survey/(scot %p src.bowl)/(scot %ud sv-id.act)
           %agent  [src.bowl %forms]
           %watch  /request/(scot %p src.bowl)/(scot %ud sv-id.act)
         ==  ==
         ::
-        %unsub
+        %unsub  :: temp
         :_  this
         :~  :*
           %pass   /survey/(scot %p sv-author.act)/(scot %ud sv-id.act)
@@ -103,9 +107,10 @@
     =+  survs=(need (~(get by shelf) our.bowl))
     =+  surv=^-(survey (need (get:s-orm survs id)))
     :_  this
-    :::~  [%give %fact ~ %forms-update !>(`update`survey+surv)]
-    ~
-    ::==
+    :~  :*
+      %give  %fact   ~
+      %forms-update  !>(survey+surv)
+    ==  ==
   ==
 ::
 ++  on-leave  on-leave:def
@@ -128,8 +133,6 @@
         ::
         %kick
         ~&  >  'you have been kickeddddd'
-        ~&  >  wire
-        ~&  >  sign 
         =+  id=(snag 2 `(list @ta)`wire)
         :_  this
         ~

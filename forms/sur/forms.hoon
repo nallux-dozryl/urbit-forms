@@ -25,8 +25,9 @@
 ::  Actions
 +$  action
   $%  create
-      ::
-      ::
+      :: edit
+      :: delete
+      :: submit
       ask
       request
       receive
