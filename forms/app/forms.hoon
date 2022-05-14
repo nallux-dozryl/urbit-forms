@@ -50,6 +50,19 @@
         =+  new-shelf=^+(shelf (~(put by shelf) our.bowl survs))
         `this(slugs slg, shelf new-shelf)
         ::
+        %delete
+        ::  takes ship and id and deletes from local state
+        ::  if form belongs to me, send a %defunct to subscribers
+        ::  then %kicks subs
+        =+  survs=^-(surveys (need (~(get by shelf) sv-author.act)))
+        =+  del-survs=^-(surveys +:(del:s-orm survs sv-id.act))
+        ?<  =(survs del-survs)
+        =+  surv=^-(survey (~(got by survs) sv-id.act))
+        =+  slg=(~(got by surv) 'slug')
+        =+  new-slugs=^+(slugs (~(del by slugs) slg))
+        =+  new-shelf=^+(shelf (~(put by shelf) sv-author.act del-survs))
+        `this(shelf new-shelf, slugs new-slugs)
+        ::
         %ask
         ?>  =(src our):bowl
         :_
@@ -147,7 +160,7 @@
         ?+  p.cage.sign  (on-agent:def wire sign)
           %forms-update
           =+  update=!<(update q.cage.sign)
-          ~&  >>  update
+          ~&  >>>  update
           `this
         ==
       ==

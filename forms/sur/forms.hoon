@@ -26,7 +26,7 @@
 +$  action
   $%  create
       :: edit
-      :: delete
+       delete
       :: submit
       ask
       request
@@ -34,6 +34,7 @@
       unsub
   ==
 +$  create   [%create title=@t description=@t =visibility =slug]
++$  delete   [%delete =sv-author =sv-id]
 +$  ask      [%ask =sv-author =slug]
 +$  request  [%request =slug]
 +$  receive  [%receive =slug =sv-id]
