@@ -16,6 +16,7 @@
       title.act
       description.act
       visibility.act
+      spawn-time
       *questions
   ==
 

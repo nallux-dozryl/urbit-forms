@@ -2,9 +2,9 @@
 ::
 ::  Top Level
 ::
-+$  surveys   ((mop survey-id survey) gth)
-+$  slugs     (map slug survey-id)
-+$  pending   (set [author slug])
++$  surveys  ((mop survey-id survey) gth)
++$  slugs    (map slug survey-id)
++$  pending  (set [author slug])
 ::
 ::  Main Types
 ::
@@ -14,6 +14,7 @@
       =title
       =description
       =visibility
+      =spawn-time
       =questions
   ==
 ::
@@ -37,25 +38,30 @@
 +$  action
   $%  create
        ::edit
-       ::delete
+      delete
        ::submit
-      ask
+  ==
++$  create  [%create title=@t description=@t =visibility =slug]
++$  delete  [%delete =survey-id]
+::
+::  Requests
+::  
++$  request
+  $%  ask
       send-slug
       send-id
-::      request
-      unsub
   ==
-+$  create       [%create title=@t description=@t =visibility =slug]
-::+$  delete   [%delete =sv-author =sv-id]
-+$  ask          [%ask =author =slug]
-+$  send-slug    [%slug =slug]
-+$  send-id  $%  [%id =slug =survey-id]
-                 [%fail =slug]
-             ==
-+$  unsub    [%unsub =author =survey-id]
-
++$  ask        [%ask =author =slug]
++$  send-slug  [%slug =slug]
++$  send-id
+  $%  [%id =slug =survey-id]
+      [%fail =slug]
+  ==
+::
 ::  Updates
+::
 +$  update
   $%  [%survey =survey]
+      [%leave =survey-id]
   ==
 --

@@ -40,18 +40,22 @@
   |=  [=mark =vase]
   ^-  (quip card _this)
   |^
-  ?+    mark  (on-poke:def mark vase)
-      %forms-action
+  ?+  mark  (on-poke:def mark vase)
+    %forms-action
     =^  cards  state
       (handle-action !<(action vase))
-    [cards this]
+      [cards this]
+    %forms-request
+    =^  cards  state
+      (handle-request !<(request vase))
+      [cards this]
   ==
   ++  handle-action
     |=  act=action
     ^-  (quip card _state)
+    ?>  =(src our):bowl
     ?-  -.act
       %create
-      ?>  =(src our):bowl
       ~|  'slug already exists'
       ?>  =(~ (~(get by slugs) slug.act))
       =+  id=(make-survey-id:fl now.bowl our.bowl)
@@ -62,40 +66,55 @@
         (put:s-orm:fl surveys id survey)
       `state(surveys new-surveys, slugs new-slugs)
       ::
+      %delete
+      ~|  'survey does not exist'
+      =+  survey=(need (get:s-orm:fl surveys survey-id.act))
+      =+  new-surveys=+:(del:s-orm:fl surveys survey-id.act)
+      =+  new-slugs=(~(del by slugs) slug.survey)
+      :_  state(surveys new-surveys, slugs new-slugs)
+      ?.  =(our.bowl author.survey)
+      :~  :*
+        %pass   /updates/(scot %ud survey-id.act)
+        %agent  [author.survey %forms]  %leave  ~
+      ==  ==
+      :~  :*
+        %give  %fact  ~[/survey/(scot %ud survey-id.act)]
+        %forms-update  !>  leave+survey-id.act
+      ==  ==
+    ==
+  ++  handle-request
+    |=  req=request
+    ^-  (quip card _state)
+    ?-  -.req
       %ask
-      :_  state(pending (~(put in pending) [author.act slug.act]))
+      :_  state(pending (~(put in pending) [author.req slug.req]))
       :~  :*
         %pass   /slug
-        %agent  [author.act %forms]
-        %poke   %forms-action  !>  slug+slug.act
+        %agent  [author.req %forms]
+        %poke   %forms-request  !>  slug+slug.req
       ==  ==
       ::
       %slug
-      =+  id=(~(get by slugs) slug.act)
+      =+  id=(~(get by slugs) slug.req)
       :_  state
       :~  :*
         %pass   /slug
         %agent  [src.bowl %forms]
-        %poke   %forms-action  !>  
-        ?~  id  fail+slug.act  id+[slug.act (need id)]
+        %poke   %forms-request  !>  
+        ?~  id  fail+slug.req  id+[slug.req (need id)]
         ==  ==
       ::
       %fail
-      `state(pending (~(del in pending) [src.bowl slug.act]))
+      %-  (slog leaf+"forms doesn't exist!" ~)
+      `state(pending (~(del in pending) [src.bowl slug.req]))
       ::
       %id
-      :_  state(pending (~(del in pending) [src.bowl slug.act]))
+      %-  (slog leaf+"subscribing to survey" ~)
+      :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
-      %pass   /updates/(scot %ud survey-id.act)
-      %agent  [src.bowl %forms]
-      %watch  /survey/(scot %ud survey-id.act)
-      ==  ==
-      ::
-      %unsub
-      :_  state
-      :~  :*
-      %pass   /updates/(scot %ud survey-id.act)
-      %agent  [author.act %forms]  %leave  ~
+        %pass   /updates/(scot %ud survey-id.req)
+        %agent  [src.bowl %forms]
+        %watch  /survey/(scot %ud survey-id.req)
       ==  ==
     ==
   --  
@@ -105,7 +124,9 @@
   ?+  path  (on-watch:def path)
     [%survey @ ~]
     =/  id=survey-id   (slav %ud i.t.path)
-    =+  survey=+:(get:s-orm:fl surveys id)
+    =+  survey=(need (get:s-orm:fl surveys id))
+    ~|  'invalid permissions'
+    ?>  =(%public visibility.survey)
     :_  this
     :~  :*
       %give  %fact  ~
@@ -121,9 +142,16 @@
     [%slug ~]
     ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
     ?~  p.sign
-      %-  (slog '%ask succeeded' ~)  `this
+      `this
       %-  %-  slog  ^-  tang  (need p.sign)  `this
     ::
+    [%leave ~]
+    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
+    ?~  p.sign
+      `this
+      %-  %-  slog  ^-  tang  (need p.sign)  `this
+    ::
+
     [%updates @ ~]
     ?+  -.sign  (on-agent:def wire sign)
       %watch-ack
@@ -131,7 +159,13 @@
       %-  %-  slog  ^-  tang  (need p.sign)  `this
       ::
       %kick
-      ~&  >>>  -.sign  `this
+      =+  id=(slav %ud i.t.wire)
+      :_  this
+      :~  :*
+        %pass   /updates/id
+        %agent  [src.bowl %forms]
+        %watch  /survey/id
+      ==  ==
       ::
       %fact
       ?+  p.cage.sign  (on-agent:def wire sign)
@@ -143,6 +177,15 @@
           =/  new-surveys  ^+  surveys
             (put:s-orm:fl surveys id survey.upd)
           `this(surveys new-surveys)
+          ::
+          %leave
+          :_  this
+          :~  :*
+            %pass   wire
+            %agent  [src.bowl %forms]
+            %leave  ~
+          ==  ==
+          ::
         ==
       ==
     ==
@@ -150,4 +193,3 @@
 ++  on-arvo   on-arvo:def
 ++  on-fail   on-fail:def
 --
-
