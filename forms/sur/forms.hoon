@@ -1,62 +1,61 @@
 |%
-:: Top Level
-+$  shelf   (map sv-author surveys)
-+$  slugs    (map =slug sv-id)
-+$  pending  (set [sv-author slug])
-
-+$  sv-author  ship    +$  slug      @ta
-
-::  unix time          ::  placeholder type
-+$  sv-id      @ud     +$  question  @t 
-
-+$  visibility  ?(%public %private %team)
-
-+$  questions  (map question-id=@ud question)  
-
-+$  survey        (map @t sv-data)
-+$  surveys       ((mop sv-id survey) gth)
-+$  sv-data
-  $%  @t
-      slug
-      questions
-      visibility
+::
+::  Top Level
+::
++$  surveys   ((mop survey-id survey) gth)
++$  slugs     (map slug survey-id)
++$  pending   (set [author slug])
+::
+::  Main Types
+::
++$  survey
+  $:  =author
+      =slug
+      =title
+      =description
+      =visibility
+      =questions
   ==
-
+::
+::  Basic Types
+::
++$  survey-id    @ud
++$  author       ship
++$  slug         @ta
++$  title        @t
++$  description  @t
++$  visibility   ?(%public %private %team)
++$  spawn-time   @da
+::
+::  Questions
+::
++$  question   @t 
++$  questions  (map question-id=@ud question)  
+::
 ::  Actions
+::
 +$  action
   $%  create
-      :: edit
-       delete
-      :: submit
+       ::edit
+       ::delete
+       ::submit
       ask
-      request
-      receive
+      send-slug
+      send-id
+::      request
       unsub
   ==
-+$  create   [%create title=@t description=@t =visibility =slug]
-+$  delete   [%delete =sv-author =sv-id]
-+$  ask      [%ask =sv-author =slug]
-+$  request  [%request =slug]
-+$  receive  [%receive =slug =sv-id]
-+$  unsub    [%unsub =sv-author =sv-id]
++$  create       [%create title=@t description=@t =visibility =slug]
+::+$  delete   [%delete =sv-author =sv-id]
++$  ask          [%ask =author =slug]
++$  send-slug    [%slug =slug]
++$  send-id  $%  [%id =slug =survey-id]
+                 [%fail =slug]
+             ==
++$  unsub    [%unsub =author =survey-id]
 
 ::  Updates
 +$  update
   $%  [%survey =survey]
   ==
 --
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

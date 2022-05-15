@@ -1,19 +1,24 @@
 /-  *forms
 |%
+++  s-orm   ((on survey-id survey) gth)
 ++  make-survey-id
-  |=  now=@da
-  ^-  sv-id
-  (unm:chrono:userlib now)
+  |=  [now=@da =author]
+  ^-  survey-id
+  =/  present=@ub  (mul 4.294.967.296 (unm:chrono:userlib now))
+  =/  ship-hash=@ub     (shaw author 32 author)
+  (add present ship-hash)
+
 ++  create-survey
-  |=  act=create
+  |=  [act=create =author =spawn-time]
   ^-  survey
-  =|  surv=survey
-  =.  surv  (~(put by surv) 'title' title.act)
-  =.  surv  (~(put by surv) 'description' description.act)
-  =.  surv  (~(put by surv) 'visibility' visibility.act)
-  =.  surv  (~(put by surv) 'slug' slug.act)
-  =.  surv  (~(put by surv) 'questions' *questions)
-  surv
+  :*  author
+      slug.act
+      title.act
+      description.act
+      visibility.act
+      *questions
+  ==
+
   
 ++  remove-json
   |=  data=json
