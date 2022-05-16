@@ -70,5 +70,6 @@
 +$  update
   $%  [%survey =survey]
       [%leave =survey-id]
+      [%edit edit]
   ==
 --

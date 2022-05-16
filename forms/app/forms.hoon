@@ -86,7 +86,12 @@
       ~|  'information incorrect'
       =+  survey=(need (get:s-orm:fl surveys survey-id.act))
       =+  data=`edit`+7.act
-      :_  %=  state  surveys  ^+  surveys
+      :-  ?.  =(our.bowl author.survey)  ~
+      :~  :*
+        %give  %fact   ~[/survey/(scot %ud survey-id.act)]
+        %forms-update  !>  `update`edit+data
+      ==  ==
+      %=  state  surveys  ^+  surveys
       %-  put:s-orm:fl  :+  surveys  survey-id.act
         ?-  -.data
           %title
@@ -110,7 +115,6 @@
           survey
         ==
       ==
-      ~
     ==
   ++  handle-request
     |=  req=request
@@ -159,7 +163,7 @@
     ?>  =(%public visibility.survey)
     :_  this
     :~  :*
-      %give  %fact  ~
+      %give  %fact   ~
       %forms-update  !>  `update`survey+survey
     ==  ==
   ==
@@ -181,7 +185,12 @@
       `this
       %-  %-  slog  ^-  tang  (need p.sign)  `this
     ::
-
+    [%edit ~]
+    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
+    ?~  p.sign
+      `this
+      %-  %-  slog  ^-  tang  (need p.sign)  `this
+    ::
     [%updates @ ~]
     ?+  -.sign  (on-agent:def wire sign)
       %watch-ack
@@ -192,18 +201,18 @@
       =+  id=(slav %ud i.t.wire)
       :_  this
       :~  :*
-        %pass   /updates/id
+        %pass   [%updates i.t.wire ~]
         %agent  [src.bowl %forms]
-        %watch  /survey/id
+        %watch  [%survey i.t.wire ~]
       ==  ==
       ::
       %fact
       ?+  p.cage.sign  (on-agent:def wire sign)
         %forms-update
+        =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd  ::(on-agent:def wire sign)
           %survey
-          =/  id=survey-id  (slav %ud i.t.wire)
           =/  new-surveys  ^+  surveys
             (put:s-orm:fl surveys id survey.upd)
           `this(surveys new-surveys)
@@ -216,6 +225,16 @@
             %leave  ~
           ==  ==
           ::
+          %edit
+          ~|  'did not work'
+          =+  survey=(need (get:s-orm:fl surveys id))
+          ?>  =(src.bowl author.survey)
+          :_  this
+          :~  :*
+            %pass   /edit
+            %agent  [our.bowl %forms]
+            %poke   %forms-action  !>  `action`edit+[id +.upd]
+          ==  ==
         ==
       ==
     ==
