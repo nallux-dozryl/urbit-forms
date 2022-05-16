@@ -81,6 +81,36 @@
         %give  %fact  ~[/survey/(scot %ud survey-id.act)]
         %forms-update  !>  leave+survey-id.act
       ==  ==
+      ::
+      %edit
+      ~|  'information incorrect'
+      =+  survey=(need (get:s-orm:fl surveys survey-id.act))
+      =+  data=`edit`+7.act
+      :_  %=  state  surveys  ^+  surveys
+      %-  put:s-orm:fl  :+  surveys  survey-id.act
+        ?-  -.data
+          %title
+          =.  title.survey
+            title.data
+          survey
+          ::
+          %description
+          =.  description.survey
+            description.data
+          survey
+          ::
+          %visibility
+          =.  visibility.survey
+            visibility.data
+          survey
+          ::
+          %slug
+          =.  slug.survey
+            slug.data
+          survey
+        ==
+      ==
+      ~
     ==
   ++  handle-request
     |=  req=request

@@ -30,19 +30,26 @@
 ::
 ::  Questions
 ::
-+$  question   @t 
-+$  questions  (map question-id=@ud question)  
++$  questions  (map question-id question)  
++$  question-id  @ud
++$  question     @t
 ::
 ::  Actions
 ::
 +$  action
   $%  create
-       ::edit
       delete
-       ::submit
+      [%edit =survey-id edit]
+      ::submit
   ==
-+$  create  [%create title=@t description=@t =visibility =slug]
++$  create  [%create =title =description =visibility =slug]
 +$  delete  [%delete =survey-id]
++$  edit
+  $%  [%title =title]
+      [%description =description]
+      [%visibility =visibility]
+      [%slug =slug]
+  ==
 ::
 ::  Requests
 ::  
