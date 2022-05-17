@@ -115,6 +115,26 @@
           survey
         ==
       ==
+      ::
+::      %question
+::      =+  data=+7.act
+::        ?-  -.data
+::          %add
+::          =/  =survey  (need (get:s-orm:fl surveys survey-id.act))
+::          ?>  =(q-count.survey (lent (bap:q-orm:fl questions.survey)))
+::          =+  qid=+(q-count.survey)
+::          =.  q-count.survey  qid
+::          =.  questions.survey  (put:q-orm:fl questions.survey qid +.data)
+::          :_  state(surveys (put:s-orm:fl surveys survey-id.act survey))
+::          ~&  >>  data
+::          :~  :*
+::            %give  %fact   ~[/survey/(scot %ud survey-id.act)]
+::            %forms-update  !>  `update`question+data
+::          ==  ==
+          ::
+::          %delete  `state
+::        ==
+      ::
     ==
   ++  handle-request
     |=  req=request
@@ -152,7 +172,7 @@
       ==  ==
     ==
   --  
-++  on-watch  ::on-watch:def
+++  on-watch
   |=  =path
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
@@ -169,7 +189,7 @@
   ==
 ++  on-leave  on-leave:def
 ++  on-peek   on-peek:def
-++  on-agent  ::on-agent:def
+++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
   ?+  wire  (on-agent:def wire sign)
@@ -194,10 +214,12 @@
     [%updates @ ~]
     ?+  -.sign  (on-agent:def wire sign)
       %watch-ack
+      ~&  >>>  'watch aack'
       ?~  p.sign  (on-agent:def wire sign)
       %-  %-  slog  ^-  tang  (need p.sign)  `this
       ::
       %kick
+      ~&  >>>  'kicked'
       =+  id=(slav %ud i.t.wire)
       :_  this
       :~  :*
@@ -207,6 +229,7 @@
       ==  ==
       ::
       %fact
+      ~&  >>>  'fax'
       ?+  p.cage.sign  (on-agent:def wire sign)
         %forms-update
         =/  id=survey-id  (slav %ud i.t.wire)
@@ -235,6 +258,7 @@
             %agent  [our.bowl %forms]
             %poke   %forms-action  !>  `action`edit+[id +.upd]
           ==  ==
+          ::
         ==
       ==
     ==

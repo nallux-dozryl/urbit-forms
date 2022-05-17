@@ -1,6 +1,7 @@
 /-  *forms
 |%
 ++  s-orm   ((on survey-id survey) gth)
+++  q-orm   ((on question-id question) lth)
 ++  make-survey-id
   |=  [now=@da =author]
   ^-  survey-id
@@ -17,6 +18,7 @@
       description.act
       visibility.act
       spawn-time
+      *q-count
       *questions
   ==
 
