@@ -3,8 +3,10 @@
 ::  Top Level
 ::
 +$  surveys      ((mop survey-id survey) gth)
++$  defunct      ((mop survey-id survey) gth)
 +$  slugs        (map slug survey-id)
 +$  pending      (set [author slug])
++$  subscribers  (map survey-id ships)
 ::
 ::  Main Types
 ::
@@ -20,7 +22,9 @@
 ::
 ::  Basic Types
 ::
++$  survey-hash  @
 +$  survey-id    @ud
++$  ships        (set ship)
 +$  author       ship
 +$  slug         @ta
 +$  title        @t
@@ -30,25 +34,6 @@
 +$  q-count      @ud
 ::
 ::  Questions
-::
-::  the first question will have an id of 1 with every new
-::  question having an id of +(id). 
-::
-::  the count will increase with every new question added, the 
-::  agent will always check if the number of questions is the
-::  same as the count. The form is considered bricked if the 
-::  number of questions does not match up with the count.
-::
-::  when the position of a question is moved to a higher
-::  position (lower id), the selected question will be moved
-::  to position 0 and everything in between the old and
-::  new position will increment by 1. After that the selected
-::  question will be placed in the correct position.
-::
-::  the same will happen if the inverse happens but instead of
-::  increment, the id will be decremented.
-::  
-::  
 ::
 +$  questions    ((mop question-id question) lth)
 +$  question-id  @ud
@@ -89,11 +74,11 @@
                  [%description =description]
                  [%visibility =visibility]
                  [%slug =slug]
+                 [%question =q-action]
              ==
 +$  q-action  $%  [%add =q-title =front =back =required =options]
                   [%delete =question-id]
               ==
-
 ::
 ::  Requests
 ::  
@@ -111,8 +96,6 @@
 ::  Updates
 ::
 +$  update   $%  [%survey =survey]
-                 [%leave =survey-id]
-                 [%edit edit]
-::                 [%question =q-action]
+::                 [%defunct =survey-id]
              ==
 --

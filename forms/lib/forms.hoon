@@ -21,11 +21,10 @@
       *q-count
       *questions
   ==
-
-  
-++  remove-json
-  |=  data=json
-  data
-::(crip (en-json:html data))
-::  ((op so):dejs:format data)
+++  add-subs
+  |=  [subs=subscribers id=survey-id =ship]
+  ^-  subscribers
+  =+  ships=(need (~(get by subs) id))
+  (~(put by subs) id (~(put in ships) ship))
+::
 --

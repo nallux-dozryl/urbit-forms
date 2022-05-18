@@ -7,8 +7,10 @@
 +$  state-0
   $:  %0
     =surveys
+    =defunct
     =slugs
     =pending
+    =subscribers
   ==
 +$  card  card:agent:gall
 --
@@ -64,76 +66,44 @@
         (~(put by slugs) slug.act id)
       =/  new-surveys  ^+  surveys
         (put:s-orm:fl surveys id survey)
-      `state(surveys new-surveys, slugs new-slugs)
+        ~&  >  id
+      :-  ~
+      %=  state
+        surveys      new-surveys
+        slugs        new-slugs
+        subscribers  (~(put in subscribers) id *ships)
+      ==
       ::
       %delete
       ~|  'survey does not exist'
       =+  survey=(need (get:s-orm:fl surveys survey-id.act))
       =+  new-surveys=+:(del:s-orm:fl surveys survey-id.act)
       =+  new-slugs=(~(del by slugs) slug.survey)
-      :_  state(surveys new-surveys, slugs new-slugs)
       ?.  =(our.bowl author.survey)
-      :~  :*
-        %pass   /updates/(scot %ud survey-id.act)
-        %agent  [author.survey %forms]  %leave  ~
-      ==  ==
-      :~  :*
-        %give  %fact  ~[/survey/(scot %ud survey-id.act)]
-        %forms-update  !>  leave+survey-id.act
-      ==  ==
+        :-  ~  
+        %=  state
+          surveys  new-surveys
+          slugs    new-slugs
+        ==
+      =/  subs
+        ~(tap in (need (~(get by subscribers) survey-id.act)))
+      :_  %=  state
+            surveys      new-surveys
+            slugs        new-slugs
+            subscribers  (~(del by subscribers) survey-id.act)
+          ==
+      ?:  =(0 (lent subs))
+        ~
+      %+  turn
+        subs
+      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
       ::
       %edit
       ~|  'information incorrect'
       =+  survey=(need (get:s-orm:fl surveys survey-id.act))
       =+  data=`edit`+7.act
-      :-  ?.  =(our.bowl author.survey)  ~
-      :~  :*
-        %give  %fact   ~[/survey/(scot %ud survey-id.act)]
-        %forms-update  !>  `update`edit+data
-      ==  ==
-      %=  state  surveys  ^+  surveys
-      %-  put:s-orm:fl  :+  surveys  survey-id.act
-        ?-  -.data
-          %title
-          =.  title.survey
-            title.data
-          survey
-          ::
-          %description
-          =.  description.survey
-            description.data
-          survey
-          ::
-          %visibility
-          =.  visibility.survey
-            visibility.data
-          survey
-          ::
-          %slug
-          =.  slug.survey
-            slug.data
-          survey
-        ==
-      ==
-      ::
-::      %question
-::      =+  data=+7.act
-::        ?-  -.data
-::          %add
-::          =/  =survey  (need (get:s-orm:fl surveys survey-id.act))
-::          ?>  =(q-count.survey (lent (bap:q-orm:fl questions.survey)))
-::          =+  qid=+(q-count.survey)
-::          =.  q-count.survey  qid
-::          =.  questions.survey  (put:q-orm:fl questions.survey qid +.data)
-::          :_  state(surveys (put:s-orm:fl surveys survey-id.act survey))
-::          ~&  >>  data
-::          :~  :*
-::            %give  %fact   ~[/survey/(scot %ud survey-id.act)]
-::            %forms-update  !>  `update`question+data
-::          ==  ==
-          ::
-::          %delete  `state
-::        ==
+      ~&  >  data
+      `state
       ::
     ==
   ++  handle-request
@@ -141,6 +111,7 @@
     ^-  (quip card _state)
     ?-  -.req
       %ask
+      ::~&  >  '%ask worked'
       :_  state(pending (~(put in pending) [author.req slug.req]))
       :~  :*
         %pass   /slug
@@ -149,6 +120,7 @@
       ==  ==
       ::
       %slug
+      ::~&  >  'slug worked'
       =+  id=(~(get by slugs) slug.req)
       :_  state
       :~  :*
@@ -163,6 +135,7 @@
       `state(pending (~(del in pending) [src.bowl slug.req]))
       ::
       %id
+      ::~&  >  '%id worked'
       %-  (slog leaf+"subscribing to survey" ~)
       :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
@@ -177,11 +150,13 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
     [%survey @ ~]
+    ::~&  >  'watch arm worked'
     =/  id=survey-id   (slav %ud i.t.path)
     =+  survey=(need (get:s-orm:fl surveys id))
     ~|  'invalid permissions'
     ?>  =(%public visibility.survey)
-    :_  this
+    :_  this(subscribers (add-subs:fl subscribers id src.bowl))
+    ::~&  >  `update`survey+survey
     :~  :*
       %give  %fact   ~
       %forms-update  !>  `update`survey+survey
@@ -221,12 +196,10 @@
       %kick
       ~&  >>>  'kicked'
       =+  id=(slav %ud i.t.wire)
-      :_  this
-      :~  :*
-        %pass   [%updates i.t.wire ~]
-        %agent  [src.bowl %forms]
-        %watch  [%survey i.t.wire ~]
-      ==  ==
+      =+  survey=(need (get:s-orm:fl surveys id))
+      =+  new-defunct=(put:s-orm:fl defunct id survey)
+      =+  new-surveys=+:(del:s-orm:fl surveys id)
+      `this(surveys new-surveys, defunct new-defunct)
       ::
       %fact
       ~&  >>>  'fax'
@@ -239,25 +212,6 @@
           =/  new-surveys  ^+  surveys
             (put:s-orm:fl surveys id survey.upd)
           `this(surveys new-surveys)
-          ::
-          %leave
-          :_  this
-          :~  :*
-            %pass   wire
-            %agent  [src.bowl %forms]
-            %leave  ~
-          ==  ==
-          ::
-          %edit
-          ~|  'did not work'
-          =+  survey=(need (get:s-orm:fl surveys id))
-          ?>  =(src.bowl author.survey)
-          :_  this
-          :~  :*
-            %pass   /edit
-            %agent  [our.bowl %forms]
-            %poke   %forms-action  !>  `action`edit+[id +.upd]
-          ==  ==
           ::
         ==
       ==
