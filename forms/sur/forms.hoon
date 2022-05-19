@@ -64,12 +64,11 @@
 +$  action   $%  create
                  delete
                  [%edit =survey-id edit]
-::                 [%question =survey-id q-action]
                  ::submit
              ==
 ::
 +$  create       [%create =title =description =visibility =slug]
-+$  delete       [%delete =survey-id]
++$  delete       [%delete status=?(%defunct %live) =survey-id]
 +$  edit     $%  [%title =title]
                  [%description =description]
                  [%visibility =visibility]
@@ -77,7 +76,7 @@
                  [%question =q-action]
              ==
 +$  q-action  $%  [%add =q-title =front =back =required =options]
-                  [%delete =question-id]
+::                  [%delete =question-id]
               ==
 ::
 ::  Requests
@@ -96,6 +95,5 @@
 ::  Updates
 ::
 +$  update   $%  [%survey =survey]
-::                 [%defunct =survey-id]
              ==
 --

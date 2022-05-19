@@ -75,12 +75,22 @@
       ==
       ::
       %delete
+      ?.  =(%live status.act)
+        =+  new-defunct=+:(del:s-orm:fl defunct survey-id.act)
+        `state(defunct new-defunct)
       ~|  'survey does not exist'
       =+  survey=(need (get:s-orm:fl surveys survey-id.act))
       =+  new-surveys=+:(del:s-orm:fl surveys survey-id.act)
       =+  new-slugs=(~(del by slugs) slug.survey)
       ?.  =(our.bowl author.survey)
-        :-  ~  
+        :-
+        :~  :*
+          %pass
+          /updates/(scot %ud survey-id.act)
+          %agent
+          [author.survey %forms]
+          %leave  ~
+        ==  ==
         %=  state
           surveys  new-surveys
           slugs    new-slugs
@@ -103,7 +113,54 @@
       =+  survey=(need (get:s-orm:fl surveys survey-id.act))
       =+  data=`edit`+7.act
       ~&  >  data
-      `state
+      =/  new-surveys
+        %^    put:s-orm:fl
+            surveys
+          survey-id.act
+        ?-  -.data
+            %title
+          =.  title.survey
+           title.data
+          survey
+          ::
+            %description
+          =.  description.survey
+            description.data
+          survey
+          ::
+            %visibility
+          =.  visibility.survey
+            visibility.data
+          survey
+          ::
+            %slug
+          =.  slug.survey
+            slug.data
+          survey
+          ::
+            %question
+          survey
+        ==
+        =+  survey=(got:s-orm:fl new-surveys survey-id.act)
+        ?:  =(%private visibility.survey)
+          =/  subs
+            ~(tap in (need (~(get by subscribers) survey-id.act)))
+          :_ 
+          %=  state
+              surveys      new-surveys
+              subscribers  (~(put by subscribers) survey-id.act *ships)
+          ==
+          %+  turn
+            subs
+          |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
+        :_  state(surveys new-surveys)
+        :~  :*
+          %give  %fact   ~[/survey/(scot %ud survey-id.act)]
+          %forms-update
+          !>  
+          ^-  update
+          survey+(got:s-orm:fl new-surveys survey-id.act)
+        ==  ==
       ::
     ==
   ++  handle-request
