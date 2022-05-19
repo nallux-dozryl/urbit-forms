@@ -54,7 +54,7 @@
                  %linear-continuous
                  %calendar
              ==
-+$  back     $%  %cord
++$  back     $?  %text
                  %noun
                  %grid
              ==
@@ -73,11 +73,8 @@
                  [%description =description]
                  [%visibility =visibility]
                  [%slug =slug]
-                 [%question =q-action]
+                 [%add-q =q-title =front =back =required =options]
              ==
-+$  q-action  $%  [%add =q-title =front =back =required =options]
-::                  [%delete =question-id]
-              ==
 ::
 ::  Requests
 ::  

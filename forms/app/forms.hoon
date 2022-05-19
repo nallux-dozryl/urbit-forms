@@ -110,39 +110,48 @@
       ::
       %edit
       ~|  'information incorrect'
-      =+  survey=(need (get:s-orm:fl surveys survey-id.act))
+      =+  this-survey=`survey`(need (get:s-orm:fl surveys survey-id.act))
       =+  data=`edit`+7.act
-      ~&  >  data
-      =/  new-surveys
+      =/  new-surveys  ^+  surveys
         %^    put:s-orm:fl
             surveys
           survey-id.act
         ?-  -.data
             %title
-          =.  title.survey
+          =.  title.this-survey
            title.data
-          survey
+          this-survey
           ::
             %description
-          =.  description.survey
+          =.  description.this-survey
             description.data
-          survey
+          this-survey
           ::
             %visibility
-          =.  visibility.survey
+          =.  visibility.this-survey
             visibility.data
-          survey
+          this-survey
           ::
             %slug
-          =.  slug.survey
+          =.  slug.this-survey
             slug.data
-          survey
+          this-survey
           ::
-            %question
-          survey
+            %add-q
+          =+  count=q-count.this-survey
+          ?>  =(count ~(wyt by questions.this-survey))
+          =/  ques=question  +.data
+          =/  this-questions=questions  questions.this-survey
+          =/  new-questions=questions
+            (put:q-orm:fl this-questions +(count) ques)
+          =.  questions.this-survey
+            new-questions
+          =.  q-count.this-survey
+            +(count)
+          this-survey
         ==
-        =+  survey=(got:s-orm:fl new-surveys survey-id.act)
-        ?:  =(%private visibility.survey)
+        =+  this-survey=`survey`(got:s-orm:fl new-surveys survey-id.act)
+        ?:  =(%private visibility.this-survey)
           =/  subs
             ~(tap in (need (~(get by subscribers) survey-id.act)))
           :_ 
@@ -159,8 +168,9 @@
           %forms-update
           !>  
           ^-  update
-          survey+(got:s-orm:fl new-surveys survey-id.act)
+          survey+`survey`this-survey
         ==  ==
+::          ~
       ::
     ==
   ++  handle-request
@@ -168,7 +178,6 @@
     ^-  (quip card _state)
     ?-  -.req
       %ask
-      ::~&  >  '%ask worked'
       :_  state(pending (~(put in pending) [author.req slug.req]))
       :~  :*
         %pass   /slug
@@ -177,7 +186,6 @@
       ==  ==
       ::
       %slug
-      ::~&  >  'slug worked'
       =+  id=(~(get by slugs) slug.req)
       :_  state
       :~  :*
@@ -192,7 +200,6 @@
       `state(pending (~(del in pending) [src.bowl slug.req]))
       ::
       %id
-      ::~&  >  '%id worked'
       %-  (slog leaf+"subscribing to survey" ~)
       :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
