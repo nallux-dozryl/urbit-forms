@@ -8,7 +8,7 @@
   =/  present=@ub  (mul 4.294.967.296 (unm:chrono:userlib now))
   =/  ship-hash=@ub     (shaw author 32 author)
   (add present ship-hash)
-
+::
 ++  create-survey
   |=  [act=create =author =spawn-time]
   ^-  survey
@@ -20,6 +20,20 @@
       spawn-time
       *q-count
       *questions
+  ==
+::
+++  clone-survey
+  |=  [act=clone jango=survey =author =spawn-time]
+  ^-  survey
+
+  :*  author
+      slug.act
+      title.act
+      description.act
+      visibility.act
+      spawn-time
+      q-count.jango
+      questions.jango
   ==
 ++  add-subs
   |=  [subs=subscribers id=survey-id =ship]

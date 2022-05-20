@@ -74,6 +74,28 @@
         subscribers  (~(put in subscribers) id *ships)
       ==
       ::
+      %clone
+      ~|  'cloning failed'
+      ?>  =(~ (~(get by slugs) slug.act))
+      =+  id=(make-survey-id:fl now.bowl our.bowl)
+      =/  new-slugs  ^+  slugs
+        (~(put by slugs) slug.act id)
+      =/  jango=survey
+        ?-  status.act
+          %live
+          (need (get:s-orm:fl surveys survey-id.act))
+          %defunct
+          (need (get:s-orm:fl defunct survey-id.act))
+        ==
+      =+  boba=(clone-survey:fl act jango our.bowl now.bowl)
+      =+  new-surveys=^+(surveys (put:s-orm:fl surveys id boba))
+      :-  ~
+      %=  state
+        surveys      new-surveys
+        slugs        new-slugs
+        subscribers  (~(put in subscribers) id *ships)
+      ==
+      ::
       %delete
       ?.  =(%live status.act)
         =+  new-defunct=+:(del:s-orm:fl defunct survey-id.act)
@@ -111,6 +133,7 @@
       %edit
       ~|  'information incorrect'
       =+  this-survey=`survey`(need (get:s-orm:fl surveys survey-id.act))
+      ?>  =(our.bowl author.this-survey)
       =+  untouched-slug=slug.this-survey
       =+  data=`edit`+7.act
       =/  new-surveys  ^+  surveys
@@ -202,7 +225,10 @@
           =.  options.this-question
             options.data
           =.  questions.this-survey
-            (put:q-orm:fl questions.this-survey question-id.data this-question)
+            %^    put:q-orm:fl
+                questions.this-survey 
+              question-id.data 
+            this-question
           this-survey
         ==
         =+  this-survey=`survey`(got:s-orm:fl new-surveys survey-id.act)
@@ -280,13 +306,11 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
     [%survey @ ~]
-    ::~&  >  'watch arm worked'
     =/  id=survey-id   (slav %ud i.t.path)
     =+  survey=(need (get:s-orm:fl surveys id))
     ~|  'invalid permissions'
     ?>  =(%public visibility.survey)
     :_  this(subscribers (add-subs:fl subscribers id src.bowl))
-    ::~&  >  `update`survey+survey
     :~  :*
       %give  %fact   ~
       %forms-update  !>  `update`survey+survey
@@ -337,11 +361,13 @@
         %forms-update
         =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
-        ?-  -.upd  ::(on-agent:def wire sign)
+        ?-  -.upd
           %survey
           =/  new-surveys  ^+  surveys
             (put:s-orm:fl surveys id survey.upd)
-          `this(surveys new-surveys)
+          =/  del-defunct  ^+  surveys
+            +:(del:s-orm:fl defunct id)
+          `this(surveys new-surveys, defunct del-defunct)
           ::
         ==
       ==

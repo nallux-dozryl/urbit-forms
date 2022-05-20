@@ -7,6 +7,7 @@
 +$  slugs        (map slug survey-id)
 +$  pending      (set [author slug])
 +$  subscribers  (map survey-id ships)
+::+$  responses    ((mop survey-id response) gth)
 ::
 ::  Main Types
 ::
@@ -19,11 +20,12 @@
                  =q-count
                  =questions
              ==
+::+$  response  $:  =
 ::
 ::  Basic Types
 ::
-+$  survey-hash  @
 +$  survey-id    @ud
++$  response-id  @ud
 +$  ships        (set ship)
 +$  author       ship
 +$  slug         @ta
@@ -32,6 +34,7 @@
 +$  visibility   ?(%public %private %team)
 +$  spawn-time   @da
 +$  q-count      @ud
++$  status       ?(%defunct %live)
 ::
 ::  Questions
 ::
@@ -63,13 +66,22 @@
 ::  Actions
 ::
 +$  action   $%  create
+                 clone
                  delete
                  [%edit =survey-id edit]
                  ::submit
              ==
 ::
 +$  create       [%create =title =description =visibility =slug]
-+$  delete       [%delete status=?(%defunct %live) =survey-id]
++$  clone        $:  %clone
+                     =status
+                     =survey-id
+                     =title
+                     =description
+                     =visibility
+                     =slug
+                 ==
++$  delete       [%delete =status =survey-id]
 +$  edit     $%  [%title =title]
                  [%description =description]
                  [%visibility =visibility]
