@@ -186,12 +186,22 @@
             new-questions
           this-survey
           ::
-          %edit-q
-          :: edit title is trivial
-          :: edit required is trivial
-          :: if front is changed, check if options is still valid
-          :: if valid, do nothing
-          :: if invalid, bunt it.
+            %edit-q
+          ?<  (gth question-id.data q-count.this-survey)
+          =/  this-question=question
+            (need (get:q-orm:fl questions.this-survey question-id.data))
+          =.  q-title.this-question
+            q-title.data
+          =.  front.this-question
+            front.data
+          =.  back.this-question
+            back.data
+          =.  required.this-question
+            required.data
+          =.  options.this-question
+            options.data
+          =.  questions.this-survey
+            (put:q-orm:fl questions.this-survey question-id.data this-question)
           this-survey
         ==
         =+  this-survey=`survey`(got:s-orm:fl new-surveys survey-id.act)

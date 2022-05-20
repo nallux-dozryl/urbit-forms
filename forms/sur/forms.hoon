@@ -77,10 +77,14 @@
                  [%add-q =q-title =front =back =required =options]
                  [%del-q =question-id]
                  [%move-q old=question-id new=question-id]
-                 [%edit-q edit-q]
-             ==
-::
-+$  edit-q   $%  [%title =question-id =q-title]
+                 $:  %edit-q 
+                     =question-id 
+                     =q-title 
+                     =front 
+                     =back 
+                     =required 
+                     =options
+                 ==
              ==
 ::
 ::  Requests
