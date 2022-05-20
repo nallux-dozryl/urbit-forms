@@ -149,6 +149,50 @@
           =.  q-count.this-survey
             +(count)
           this-survey
+          ::
+          %del-q
+          =/  hollow  +:(del:q-orm:fl questions.this-survey +.data)
+          =+  q-below=+(+.data)
+          =/  new-questions=questions
+          ?<  |((gth +.data q-count.this-survey) =(0 +.data))
+          %^    move-q-up-after-delete:fl
+              hollow 
+            q-below 
+          q-count.this-survey
+          =.  questions.this-survey
+            new-questions
+          =.  q-count.this-survey
+            (dec q-count.this-survey)
+          this-survey
+          ::
+          %move-q
+          ?<
+          ?|    (gth old.data q-count.this-survey)
+              (gth new.data q-count.this-survey)
+            =(0 old.data)  =(0 new.data)
+          ==
+          =/  current=question
+            (need (get:q-orm:fl questions.this-survey old.data))
+          ?:  (gth old.data new.data)  ::  'move up'
+            =/  new-questions=questions
+            (move-qs-down:fl current questions.this-survey old.data new.data)
+            =.  questions.this-survey
+              new-questions
+            this-survey
+          ?>  (gth new.data old.data)  ::  'move down'
+          =/  new-questions=questions
+          (move-qs-up:fl current questions.this-survey old.data new.data)
+          =.  questions.this-survey
+            new-questions
+          this-survey
+          ::
+          %edit-q
+          :: edit title is trivial
+          :: edit required is trivial
+          :: if front is changed, check if options is still valid
+          :: if valid, do nothing
+          :: if invalid, bunt it.
+          this-survey
         ==
         =+  this-survey=`survey`(got:s-orm:fl new-surveys survey-id.act)
         ?:  =(%private visibility.this-survey)
@@ -170,7 +214,6 @@
           ^-  update
           survey+`survey`this-survey
         ==  ==
-::          ~
       ::
     ==
   ++  handle-request

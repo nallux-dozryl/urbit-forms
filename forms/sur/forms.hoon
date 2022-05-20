@@ -44,7 +44,8 @@
                  [%grid row=(list @t) column=(list @t)]
              ==
 +$  required     ?
-+$  front    $?  %short
++$  front    $?  %statement
+                 %short
                  %long
                  %one
                  %many
@@ -74,6 +75,12 @@
                  [%visibility =visibility]
                  [%slug =slug]
                  [%add-q =q-title =front =back =required =options]
+                 [%del-q =question-id]
+                 [%move-q old=question-id new=question-id]
+                 [%edit-q edit-q]
+             ==
+::
++$  edit-q   $%  [%title =question-id =q-title]
              ==
 ::
 ::  Requests
