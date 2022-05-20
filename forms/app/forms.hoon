@@ -111,6 +111,7 @@
       %edit
       ~|  'information incorrect'
       =+  this-survey=`survey`(need (get:s-orm:fl surveys survey-id.act))
+      =+  untouched-slug=slug.this-survey
       =+  data=`edit`+7.act
       =/  new-surveys  ^+  surveys
         %^    put:s-orm:fl
@@ -216,7 +217,19 @@
           %+  turn
             subs
           |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
-        :_  state(surveys new-surveys)
+        :_
+        ?.  =(+14.act %slug)
+          %=  state
+              surveys  new-surveys
+          ==
+        =/  del-slugs  ^+  slugs
+          (~(del by slugs) untouched-slug)
+        =/  new-slugs  ^+  slugs
+          (~(put by del-slugs) slug.this-survey survey-id.act)
+        %=  state
+            surveys  new-surveys
+            slugs    new-slugs
+        ==
         :~  :*
           %give  %fact   ~[/survey/(scot %ud survey-id.act)]
           %forms-update
