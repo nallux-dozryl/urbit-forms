@@ -11,6 +11,9 @@
     =slugs
     =pending
     =subscribers
+    =draft
+    =submitted
+    =received
   ==
 +$  card  card:agent:gall
 --

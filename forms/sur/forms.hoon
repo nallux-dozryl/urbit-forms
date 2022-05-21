@@ -7,20 +7,40 @@
 +$  slugs        (map slug survey-id)
 +$  pending      (set [author slug])
 +$  subscribers  (map survey-id ships)
-::+$  responses    ((mop survey-id response) gth)
+::  
+::  Splitting these 3 to their own categories actually makes it
+::  easier to handle. Whenever a survey is being filled, the
+::  state that gets updated would be in draft.
+::
+::  Once %submit is called, the agent will check if the response
+::  matches the questions asked. If something is amiss, an error
+::  is thrown and the state doesn't get updated.
+::
+::  If everything is correct, send the response as a poke to the
+::  survey author and move the response to submitted.
+::
+::  The author will receive the response in received.
+::
++$  draft        ((mop survey-id responses) gth)
++$  submitted    ((mop survey-id responses) gth)
++$  received     ((mop survey-id responses) gth)
 ::
 ::  Main Types
 ::
-+$  survey   $:  =author
-                 =slug
-                 =title
-                 =description
-                 =visibility
-                 =spawn-time
-                 =q-count
-                 =questions
-             ==
-::+$  response  $:  =
++$  survey     $:  =author
+                   =slug
+                   =title
+                   =description
+                   =visibility
+                   =spawn-time
+                   =q-count
+                   =questions
+               ==
++$  responses  ((mop response-id response) gth)
++$  response   $:  =author
+                   =survey-id
+                   =answers
+               ==
 ::
 ::  Basic Types
 ::
@@ -35,6 +55,13 @@
 +$  spawn-time   @da
 +$  q-count      @ud
 +$  status       ?(%defunct %live)
+::
+::  Answers
+::
++$  answers     ((mop question-id answer) lth)
++$  answer  $%  [%single choice=(list @t)]
+                [%grid choice=(list (list @t))]
+            ==
 ::
 ::  Questions
 ::
