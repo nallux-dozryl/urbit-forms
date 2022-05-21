@@ -18,6 +18,7 @@
       description.act
       visibility.act
       spawn-time
+      r-limit.act
       *q-count
       *questions
   ==
@@ -32,6 +33,7 @@
       description.act
       visibility.act
       spawn-time
+      r-limit.act
       q-count.jango
       questions.jango
   ==

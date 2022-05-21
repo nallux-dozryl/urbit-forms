@@ -11,6 +11,7 @@
     =slugs
     =pending
     =subscribers
+    =access
     =draft
     =submitted
     =received

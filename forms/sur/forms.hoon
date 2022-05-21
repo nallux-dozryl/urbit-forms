@@ -7,6 +7,7 @@
 +$  slugs        (map slug survey-id)
 +$  pending      (set [author slug])
 +$  subscribers  (map survey-id ships)
++$  access       (map survey-id [restriction=?(%black %white) =ships])
 ::  
 ::  Splitting these 3 to their own categories actually makes it
 ::  easier to handle. Whenever a survey is being filled, the
@@ -33,6 +34,7 @@
                    =description
                    =visibility
                    =spawn-time
+                   =r-limit
                    =q-count
                    =questions
                ==
@@ -51,9 +53,10 @@
 +$  slug         @ta
 +$  title        @t
 +$  description  @t
-+$  visibility   ?(%public %private %team)
++$  visibility   ?(%public %private %team %restricted)
 +$  spawn-time   @da
 +$  q-count      @ud
++$  r-limit      @ud
 +$  status       ?(%defunct %live)
 ::
 ::  Answers
@@ -99,7 +102,13 @@
                  ::submit
              ==
 ::
-+$  create       [%create =title =description =visibility =slug]
++$  create       $:  %create 
+                     =title 
+                     =description 
+                     =visibility 
+                     =slug
+                     =r-limit
+                 ==
 +$  clone        $:  %clone
                      =status
                      =survey-id
@@ -107,6 +116,7 @@
                      =description
                      =visibility
                      =slug
+                     =r-limit
                  ==
 +$  delete       [%delete =status =survey-id]
 +$  edit     $%  [%title =title]
