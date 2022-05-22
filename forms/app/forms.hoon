@@ -1,3 +1,15 @@
+::
+::  
+::
+::
+::
+::
+::
+::
+::
+::
+::
+::
 /-  *forms
 /+  default-agent, dbug, fl=forms
 |%
@@ -42,42 +54,80 @@
     %0  `this(state old)
   ==
 ::
-++  on-poke   :: on-poke:def
+++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
   |^
   ?+  mark  (on-poke:def mark vase)
-    %forms-action
+      %forms-action
     =^  cards  state
       (handle-action !<(action vase))
-      [cards this]
-    %forms-request
+    [cards this]
+      %forms-request
     =^  cards  state
       (handle-request !<(request vase))
-      [cards this]
+    [cards this]
   ==
   ++  handle-action
     |=  act=action
     ^-  (quip card _state)
     ?>  =(src our):bowl
     ?-  -.act
-      %create
+::
+::    Create
+::  Checks if the slug given already exists.
+::  Make the ID for the survey.
+::  Build the actual survey without the questions.
+::  Make the new slug and put into the Slugs state.
+::  Put the newly made survey into the Surveys state.
+::  Check if the visibility type is %restricted
+::  If it is, put an empty whitelist into the Access state.
+::  Update the state.
+::  If it isn't, update the state.
+::
+        %create
       ~|  'slug already exists'
       ?>  =(~ (~(get by slugs) slug.act))
       =+  id=(make-survey-id:fl now.bowl our.bowl)
-      =+  survey=(create-survey:fl act our.bowl now.bowl)
-      =/  new-slugs  ^+  slugs
+      =/  this-survey=survey
+        (create-survey:fl act our.bowl now.bowl)
+      =/  new-slugs
+        ^+  slugs
         (~(put by slugs) slug.act id)
-      =/  new-surveys  ^+  surveys
+      =/  new-surveys  
+        ^+  surveys
         (put:s-orm:fl surveys id survey)
-        ~&  >  id
       :-  ~
+      ?:  =(%restricted visibility.act)
+        =/  default-access  ^+  access
+          (~(put by access) id white+*ships)
+        %=  state
+          surveys      new-surveys
+          slugs        new-slugs
+          access       default-access
+        ==
       %=  state
         surveys      new-surveys
         slugs        new-slugs
         subscribers  (~(put in subscribers) id *ships)
       ==
       ::
+::
+::    Clone
+::  Check if the slug exists.
+::  Make the ID for the survey.
+::  Make the new slug and put it in the Slugs state.
+::  Check if the survey being cloned is in %live or %defunct.
+::  Call the survey Jango
+::  Clone the survey with the new ID and slug
+::  Call the new survey Boba
+::  Put Boba into the Surveys state.
+::  Update the state.
+::
+::  Note: Add the visibility check to Clone. (refer to Create)
+::     
+::        Replace survey with this-survey for consistency.
+::
       %clone
       ~|  'cloning failed'
       ?>  =(~ (~(get by slugs) slug.act))
@@ -100,6 +150,37 @@
         subscribers  (~(put in subscribers) id *ships)
       ==
       ::
+::
+::    Delete
+::  Check if the status is %live.
+::  If it isn't:
+::    Delete the survey from the Defunct state.
+::    Update the state.
+::  If it is:
+::    Get the survey in being deleted from the Surveys state.
+::    Delete the survey from from the Surveys state.
+::    Delete the slug from the the Slugs state
+::    Check if our ship is the same as the author of this survey.
+::    If it isn't:
+::      Leave the subscription of the survey.
+::      Update the state.
+::    If it is:
+::      Get every subscriber of the survey.
+::      Delete the survey entry from the Subscribers state.
+::      Update the state.
+::      Check if the Subscribers is equal 0.
+::      If it is:
+::        Send empty list of cards.
+::      If it isn't:
+::      Kick every subscriber from the subscription.
+::
+::  Note: If visibility is restricted, delete entry
+::        from the Access state.
+::        
+::        Simplify this poke, nested conditionals are confusing!
+::
+::        Replace survey with this-survey for consistency.
+::
       %delete
       ?.  =(%live status.act)
         =+  new-defunct=+:(del:s-orm:fl defunct survey-id.act)
@@ -134,6 +215,20 @@
         subs
       |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
       ::
+::
+::    Edit
+::  Get the survey being edited.
+::  Check if our ship is the author of the survey. Crash if no.
+::  Get the unedited slug for later use if slug is being edited.
+::  Get the 'edit' part of the vase and call it data.
+::  (question edits below)
+::  Modify the Surveys state with the new editions.
+::  
+::  Note: May have been too fancy in this poke, refactor maybe?
+::     
+::        Expand visibility to also create the Access entry for
+::        this specific survey.
+::
       %edit
       ~|  'information incorrect'
       =+  this-survey=`survey`(need (get:s-orm:fl surveys survey-id.act))
@@ -165,6 +260,16 @@
             slug.data
           this-survey
           ::
+::
+::    Add-q
+::  Get the q-count of the survey.
+::  Check if the q-count is the same as the number of questions.
+::  Get the new question and call it ques (yeah change this)
+::  Get the questions of the survey.
+::  Put the new question is the questions of the survey.
+::  Increment the q-count.
+::  Modify the survey.
+::
             %add-q
           =+  count=q-count.this-survey
           ?>  =(count ~(wyt by questions.this-survey))
@@ -178,6 +283,16 @@
             +(count)
           this-survey
           ::
+::
+::    Del-q
+::  Delete the question from the survey.
+::  Increment the question-id provided and call it q-below.
+::  Crash if either the question-id provided is higher than
+::    the number of questions or if it is 0.
+::  Move every question below the deleted question up by one space.
+::  Decrement the q-count
+::  Modify the survey.
+::
           %del-q
           =/  hollow  +:(del:q-orm:fl questions.this-survey +.data)
           =+  q-below=+(+.data)
