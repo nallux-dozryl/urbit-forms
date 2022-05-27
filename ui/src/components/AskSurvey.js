@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { Stack, Button, Form } from 'react-bootstrap';
+import CreateModal from './CreateModal';
 
 class AskSurvey extends Component {
   constructor(props) {
@@ -52,6 +53,8 @@ class AskSurvey extends Component {
           <Button 
             variant="outline-dark"
             onClick={this.askSurvey}>Request</Button>
+          <CreateModal />
+
       </Stack>
     )
   }

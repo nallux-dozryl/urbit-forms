@@ -1,70 +1,86 @@
-import { Component } from 'react';
-import { Dropdown, ButtonGroup, Button } from 'react-bootstrap';
+import { Nav, Dropdown, ButtonGroup, Button } from 'react-bootstrap';
+import { useState } from 'react';
 
-class Surveys extends Component {
-  constructor(props) {
-    super(props);
+export default function Surveys(props) {
 
-    this.state = {
-      msg: "def",
-      surveys: {}
-    }
+  const [tab, setTab] = useState("all")
 
-    this.getSurveys = this.getSurveys.bind(this)
-
-  }
-
-  componentDidMount() {    
-    this.getSurveys()    
-      .then(    
-        (result) => { console.log("result" + result) },
-        (err) => { console.log("err: " + err) }    
-      )    
-  }  
-
-  getSurveys = async () =>  {
-    return window.urbit.scry({
-      app: "forms",
-      path: "/surveys/live"
-    })
-  }
-
-  getSur = async () =>  {
-    const path = "/sur";
-    return window.urbit.scry({
-      app: "forms",
-      path: path
-    })
-  }
-
-
-  render() {
-    return(
-      <>
-      {JSON.stringify(this.state.surveys)}
-      <Dropdown as={ButtonGroup}>
-        <Button
-          variant="outline-dark" 
-          className="survey-button">
-          Example Form 1
-        </Button>
-        <Dropdown.Toggle 
-          split 
-          variant="outline-dark" 
-        />
-        <Dropdown.Menu>
-          <Dropdown.Item>Edit</Dropdown.Item>
-          <Dropdown.Item>Delete</Dropdown.Item>
-          <Dropdown.Item>Clone</Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown> 
-      </>
-
+  const listSurveys = props.surveys.map(survey =>
+    <Dropdown as={ButtonGroup}>
+      <Button
+        key={survey.id}
+        variant="outline-dark" 
+        className="survey-button">
+        {survey.title}
+      </Button>
+      <Dropdown.Toggle 
+        split 
+        variant="outline-dark" 
+      />
+      <Dropdown.Menu>
+        { survey.author === window.ship 
+          ? <Dropdown.Item>Edit</Dropdown.Item>
+          : null
+        }
+        <Dropdown.Item>Delete</Dropdown.Item>
+        <Dropdown.Item>Clone</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown> 
     )
 
+  const listMySurveys = props.surveys.map(survey =>
+    <>
+    {survey.author === window.ship ?
+    <Dropdown as={ButtonGroup}>
+      <Button
+        key={survey.id}
+        variant="outline-dark" 
+        className="survey-button">
+        {survey.title}
+      </Button>
+      <Dropdown.Toggle 
+        split 
+        variant="outline-dark" 
+      />
+      <Dropdown.Menu>
+        { survey.author === window.ship 
+          ? <Dropdown.Item>Edit</Dropdown.Item>
+          : null
+        }
+        <Dropdown.Item>Delete</Dropdown.Item>
+        <Dropdown.Item>Clone</Dropdown.Item>
+      </Dropdown.Menu>
+    </Dropdown> 
+    : null } 
+    </> )
 
-  }
-
-
+  return (
+    <>
+      <Nav 
+        variant="tabs" 
+        defaultActiveKey="all"
+        className="justify-content-center"
+        onSelect={(e) => setTab(e)}
+      >
+        <Nav.Item>
+          <Nav.Link eventKey="all">
+            All
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link 
+            eventKey="owned"
+          >
+            Owned
+          </Nav.Link>
+        </Nav.Item>
+        <Nav.Item>
+          <Nav.Link eventKey="defunct" disabled>
+            Defunct
+          </Nav.Link>
+        </Nav.Item>
+      </Nav>
+        {tab === "owned" ? listMySurveys : tab === "all" ? listSurveys : null}
+      </>
+  )
 }
-export default Surveys

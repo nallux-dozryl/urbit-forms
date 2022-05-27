@@ -59,11 +59,11 @@ class CreateModal extends Component {
     return(
     <>
       <Button 
-         className="create"
+         className="create-button"
          variant="outline-dark"
          onClick={this.handleCreate}
       >
-        + Create
+        +
       </Button>
       <Modal show={this.state.toggleCreate} onHide={this.handleCreate}>
         <Modal.Header closeButton>

@@ -1,12 +1,33 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
+import Urbit from '@urbit/http-api';
 import { Container, Row, Col, Stack } from 'react-bootstrap';
-import CreateModal from './CreateModal';
 import AskSurvey from './AskSurvey';
 import Surveys from './Surveys';
 
-class HomePage extends Component {
+export default function HomePage() {
+ 
+  const [surveys, setSurveys] = useState([])
 
-  render() {
+  useEffect(() => {
+    window.urbit = new Urbit("");
+    window.urbit.ship = window.ship;
+//    window.urbit.onOpen = () => this.setState({status: "con"});
+//    window.urbit.onRetry = () => this.setState({status: "try"});
+//    window.urbit.onError = (err) => this.setState({status: "err"});
+
+    const getSurveys = async () =>  {
+      return window.urbit.scry({
+        app: "forms",
+        path: "/surveys/live"
+      })
+    }
+
+  getSurveys().then(
+        (result) => { setSurveys(result) },
+        (err) => { console.log("err: " + err) }    
+      )    
+  })
+
     return(
       <Container fluid className="App">
         <Row>
@@ -18,8 +39,7 @@ class HomePage extends Component {
           >
             <Stack gap={2}>
               <AskSurvey />
-              <CreateModal />
-              <Surveys />
+              <Surveys surveys={surveys} />
             </Stack>
           </Col>
         </Row>
@@ -27,11 +47,3 @@ class HomePage extends Component {
     )
 
   }
-}
-
-
-
-
-
-
-export default HomePage 

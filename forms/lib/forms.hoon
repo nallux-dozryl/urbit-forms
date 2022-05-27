@@ -37,27 +37,24 @@
   ++  make-json
     |=  this-surveys=surveys
     ^-  json
-    %-  pairs:enjs:format 
+    :-  %a 
     %+  turn 
       `(list [survey-id survey])`(tap:s-orm this-surveys) 
     make-pairs
   ::
   ++  make-pairs
     |=  x=[survey-id survey]
-    :-  (scot %ud -.x)  
-    (mini-pairs +.x)
-  ::
-  ++  mini-pairs
-    |=  mini=survey
+    =+  mini=+.x
     %-  pairs:enjs:format
     :~
+      ['id' (numb:enjs:format -.x)]
       ['author' (ship:enjs:format author.mini)]
       ['slug' s+slug.mini]
       ['title' s+title.mini]
       ['description' s+description.mini]
       ['visibility' s+visibility.mini]
       ['spawn-time' (sect:enjs:format spawn-time.mini)]
-      ['q-count' n+(scot %ud q-count.mini)]
+      ['q-count' (numb:enjs:format q-count.mini)]
       ['questions' (make-qs questions.mini)]
     ==
   ::
