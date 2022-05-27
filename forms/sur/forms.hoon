@@ -8,20 +8,6 @@
 +$  pending      (set [author slug])
 +$  subscribers  (map survey-id ships)
 +$  access       (map survey-id [restriction=?(%black %white) =ships])
-::  
-::  Splitting these 3 to their own categories actually makes it
-::  easier to handle. Whenever a survey is being filled, the
-::  state that gets updated would be in draft.
-::
-::  Once %submit is called, the agent will check if the response
-::  matches the questions asked. If something is amiss, an error
-::  is thrown and the state doesn't get updated.
-::
-::  If everything is correct, send the response as a poke to the
-::  survey author and move the response to submitted.
-::
-::  The author will receive the response in received.
-::
 +$  draft        ((mop survey-id responses) gth)
 +$  submitted    ((mop survey-id responses) gth)
 +$  received     ((mop survey-id responses) gth)
@@ -34,7 +20,7 @@
                    =description
                    =visibility
                    =spawn-time
-                   =r-limit
+                   =rlimit
                    =q-count
                    =questions
                ==
@@ -56,7 +42,7 @@
 +$  visibility   ?(%public %private %team %restricted)
 +$  spawn-time   @da
 +$  q-count      @ud
-+$  r-limit      @ud
++$  rlimit       @ud
 +$  status       ?(%defunct %live)
 ::
 ::  Answers
@@ -95,10 +81,11 @@
 ::
 ::  Actions
 ::
-+$  action   $%  create
-                 clone
-                 delete
-                 [%edit =survey-id edit]
++$  action   $%  [%ask =author =slug]
+                 create
+::                 clone
+::                 delete
+::                 [%edit =survey-id edit]
                  ::submit
              ==
 ::
@@ -107,7 +94,7 @@
                      =description 
                      =visibility 
                      =slug
-                     =r-limit
+                     =rlimit
                  ==
 +$  clone        $:  %clone
                      =status
@@ -116,7 +103,7 @@
                      =description
                      =visibility
                      =slug
-                     =r-limit
+                     =rlimit
                  ==
 +$  delete       [%delete =status =survey-id]
 +$  edit     $%  [%title =title]
@@ -138,12 +125,10 @@
 ::
 ::  Requests
 ::  
-+$  request  $%  ask
-                 send-slug
++$  request  $%  send-slug
                  send-id
              ==
 ::
-+$  ask          [%ask =author =slug]
 +$  send-slug    [%slug =slug]
 +$  send-id  $%  [%id =slug =survey-id]
                  [%fail =slug]
@@ -152,5 +137,6 @@
 ::  Updates
 ::
 +$  update   $%  [%survey =survey]
+                 [%live =surveys]
              ==
 --

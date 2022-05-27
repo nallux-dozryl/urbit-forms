@@ -1,10 +1,12 @@
-/-  forms
-|_  =update:forms
-++  grab
-  |%
-  ++  noun  update:forms
-  --
+/-  *forms
+/+  *forms
+|_  upd=update
 ++  grow
+  |%
+  ++  noun  upd
+  ++  json  (enjs-update upd)
+  --
+++  grab
   |%
   ++  noun  update
   --

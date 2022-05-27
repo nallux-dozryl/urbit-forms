@@ -1,12 +1,14 @@
-/-  forms
-|_  =action:forms
-++  grab
-  |%
-  ++  noun  action:forms
-  --
+/-  *forms
+/+  *forms
+|_  act=action
 ++  grow
   |%
+  ++  noun  act
+  --
+++  grab
+  |%
   ++  noun  action
+  ++  json  dejs-action
   --
 ++  grad  %noun
 --
