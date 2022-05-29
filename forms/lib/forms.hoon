@@ -32,7 +32,11 @@
       %survey  
     *json
       %live
+    ?~  surveys.upd  *json
     (make-json surveys.upd)
+      %defunct
+    ?~  defunct.upd  *json
+    (make-json defunct.upd)
   ==
   ++  make-json
     |=  this-surveys=surveys
@@ -47,15 +51,15 @@
     =+  mini=+.x
     %-  pairs:enjs:format
     :~
-      ['id' (numb:enjs:format -.x)]
+      ['id' s+(scot %uv -.x)]
       ['author' (ship:enjs:format author.mini)]
       ['slug' s+slug.mini]
       ['title' s+title.mini]
       ['description' s+description.mini]
       ['visibility' s+visibility.mini]
       ['spawn-time' (sect:enjs:format spawn-time.mini)]
-      ['q-count' (numb:enjs:format q-count.mini)]
-      ['questions' (make-qs questions.mini)]
+      ['qcount' (numb:enjs:format q-count.mini)]
+::      ['questions' (make-qs questions.mini)]
     ==
   ::
   ++  make-qs

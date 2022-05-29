@@ -32,7 +32,7 @@
 ::
 ::  Basic Types
 ::
-+$  survey-id    @ud
++$  survey-id    @uv
 +$  response-id  @ud
 +$  ships        (set ship)
 +$  author       ship
@@ -138,5 +138,6 @@
 ::
 +$  update   $%  [%survey =survey]
                  [%live =surveys]
+                 [%defunct =defunct]
              ==
 --

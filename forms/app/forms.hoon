@@ -122,9 +122,9 @@
       %-  (slog leaf+"subscribing to survey" ~)
       :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
-        %pass   /updates/(scot %ud survey-id.req)
+        %pass   /updates/(scot %uv survey-id.req)
         %agent  [src.bowl %forms]
-        %watch  /survey/(scot %ud survey-id.req)
+        %watch  /survey/(scot %uv survey-id.req)
       ==  ==
     ==
   --  
@@ -133,7 +133,7 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
       [%survey @ ~]
-    =/  id=survey-id   (slav %ud i.t.path)
+    =/  id=survey-id   (slav %uv i.t.path)
     =+  survey=(need (get:s-orm:fl surveys id))
     ~|  'invalid permissions'
     ?>  =(%public visibility.survey)
@@ -151,9 +151,16 @@
       [%x %surveys *]
     ?+    t.t.path  (on-peek:def path)
         [%live ~]
+      ~&  >>  'req surveys'
       :^  ~  ~  %forms-update
       !>  ^-  update
-      live+surveys       
+      live+surveys
+      ::
+        [%defunct ~]
+      ~&  >>  'req defunct'
+      :^  ~  ~  %forms-update
+      !>  ^-  update
+      defunct+defunct
     ==
   ==
 ++  on-agent
@@ -187,7 +194,7 @@
       ::
       %kick
       ~&  >>>  'kicked'
-      =+  id=(slav %ud i.t.wire)
+      =+  id=(slav %uv i.t.wire)
       =+  survey=(need (get:s-orm:fl surveys id))
       =+  new-defunct=(put:s-orm:fl defunct id survey)
       =+  new-surveys=+:(del:s-orm:fl surveys id)
@@ -197,7 +204,7 @@
       ~&  >>>  'fax'
       ?+  p.cage.sign  (on-agent:def wire sign)
         %forms-update
-        =/  id=survey-id  (slav %ud i.t.wire)
+        =/  id=survey-id  (slav %uv i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
           %survey
@@ -207,8 +214,8 @@
             +:(del:s-orm:fl defunct id)
           `this(surveys new-surveys, defunct del-defunct)
           ::
-          %live
-          `this
+          %live     `this
+          %defunct  `this
         ==
       ==
     ==
