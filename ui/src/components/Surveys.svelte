@@ -45,7 +45,7 @@
   }
 
   .survey-title {
-    font-size: 1.618em;
+    font-size: 1.333em;
   }
 
   .button {

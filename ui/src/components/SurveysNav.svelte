@@ -35,19 +35,27 @@
     </button>
   </div>
   {#if (tab === "def")}
-    {#each defunct as { author, title }}
-      <Surveys title={title} author={author}/>
-    {/each}
+    {#if defunct}      
+      {#each defunct as { author, title }}
+        <Surveys title={title} author={author}/>
+      {/each}
+    {:else}
+      <p>No forms here, this means that all your forms are active!</p>
+    {/if}
   {:else}
-    {#each surveys as { author, title }}
-      {#if (tab === "all")}
-        <Surveys title={title} author={author}/>
+    {#if surveys}
+      {#each surveys as { author, title }}
+        {#if (tab === "all")}
+          <Surveys title={title} author={author}/>
+        {/if}
+        {#if (tab === "own" && author === window.ship)}
+          <Surveys title={title} author={author}/>
+        {/if}
+      {/each}
+      {:else}
+        <p>No forms here. Create or request one to populate this area</p>
       {/if}
-      {#if (tab === "own" && author === window.ship)}
-        <Surveys title={title} author={author}/>
-      {/if}
-    {/each}
-  {/if}
+    {/if}
 
 <style>
 
@@ -60,6 +68,11 @@
   .nav-item {
     flex: 1; 
     padding: 8px 0 8px 0;
+  }
+
+  .nav-item:hover {
+    background: grey;
+    color: white;
   }
 
   .active {

@@ -3,8 +3,10 @@
 <script>
   import { onMount } from 'svelte'
   import Urbit from '@urbit/http-api'
-  import SurveysNav from '../components/SurveysNav.svelte'
   import MediaQuery from '../components/MediaQuery.svelte'
+  import SurveysNav from '../components/SurveysNav.svelte'
+  import RequestSurvey from '../components/RequestSurvey.svelte'
+  import CreateSurvey from '../components/CreateSurvey.svelte'
 
     let surveys = [];
     let defunct = [];
@@ -38,6 +40,8 @@
 <MediaQuery query="(min-width: 768px)" let:matches>
   {#if matches}
   <div class="homepage">
+    <RequestSurvey />
+    <CreateSurvey />
     <SurveysNav surveys={surveys} defunct={defunct}/>
   </div>
   {/if}
