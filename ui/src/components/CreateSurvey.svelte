@@ -1,6 +1,11 @@
 <script>
+  import { createSurvey } from '../UrbitStore'
+	import { createEventDispatcher } from 'svelte';
+
+  const dispatch = createEventDispatcher()
+
   let isCreate = false;
-  let surveyDetails = {
+  let data = {
     title: "",
     description: "",
     visibility: "public",
@@ -8,21 +13,9 @@
     rlimit: 0
   };
 
-  let createSurvey = async () =>  {
-    if (!(
-      surveyDetails.title === "" ||
-      surveyDetails.description === "" ||
-      surveyDetails.slug === ""
-      )) {
-      const submission = await window.urbit.poke({
-        app: "forms",
-        mark: "forms-action",
-        json: {"create": surveyDetails},
-        onSuccess: ()=>(console.log("survey created!")),
-        onError: ()=>(console.log("error handling"))
-      })
-    return submission
-      } else {console.log("details cannot be empty!")}
+  function newSurvey(ship, data) {
+    createSurvey(ship, data)
+    dispatch('update', ship)
   }
 
 </script>
@@ -33,16 +26,16 @@
       <input 
         type="text"
         placeholder="Example title"
-        bind:value={surveyDetails.title}
+        bind:value={data.title}
       />
       <p>Description</p>
       <input 
         type="text"
         placeholder="Additional information.."
-        bind:value={surveyDetails.description}
+        bind:value={data.description}
       />
       <p>Visibility</p>
-      <select bind:value={surveyDetails.visibility}>
+      <select bind:value={data.visibility}>
         <option value="public">Public</option>
         <option value="private">Private</option>
       </select>
@@ -50,13 +43,13 @@
       <input 
         type="text"
         placeholder="only-dashes-allowed"
-        bind:value={surveyDetails.slug}
+        bind:value={data.slug}
       />
       <p>Max Submissions per Person (0 for unlimited)</p>
       <input 
         min=0
         type="number"
-        bind:value={surveyDetails.rlimit}
+        bind:value={data.rlimit}
       />
 
       <div class="submit-buttons">
@@ -67,7 +60,7 @@
           Cancel
         </button>
         <button 
-          on:click={createSurvey}
+          on:click={newSurvey(window.ship, data)}
           class="submit"
         >
           Create!

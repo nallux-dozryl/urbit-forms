@@ -1,15 +1,14 @@
 <script>
+  import { requestSurvey } from '../UrbitStore'
+	import { createEventDispatcher } from 'svelte';
+
   let addr;
-  
-  let requestSurvey = async () =>  {
-    let arr = addr.split("/")
-    return await window.urbit.poke({
-      app: "forms",
-      mark: "forms-action",
-      json: {"ask":{"author": arr[0],"slug":arr[1]}},
-      onSuccess: ()=>(console.log("request new surveys")),
-      onError: ()=>(console.log("error handling"))
-    })
+
+  const dispatch = createEventDispatcher()
+
+  function askSurvey(ship, data) {
+    requestSurvey(ship, data)
+    setTimeout(() => { dispatch('update', ship) }, 1000);
   }
 
 </script>
@@ -21,7 +20,7 @@
     bind:value={addr} 
   />
   <button 
-    on:click={requestSurvey}
+    on:click={askSurvey(window.ship, addr)}
     class="request"
   >
     Request

@@ -1,5 +1,3 @@
-
-
 <script>
   import { onMount } from 'svelte'
   import Urbit from '@urbit/http-api'
@@ -7,43 +5,29 @@
   import SurveysNav from '../components/SurveysNav.svelte'
   import RequestSurvey from '../components/RequestSurvey.svelte'
   import CreateSurvey from '../components/CreateSurvey.svelte'
+  import { getSurveys, getDefunct } from '../UrbitStore'
 
-    let surveys = [];
-    let defunct = [];
+    let defunct;
+    let surveys;
 
-    onMount( async () => {
-      console.log("mounted")
-      window.urbit = new Urbit("")
-      window.urbit.ship = window.ship
-      getSurveys()
-      getDefunct()
-      })
+    onMount(() => {
+      getSurveys(window.ship).then(res => surveys = res)
+      getDefunct(window.ship).then(res => defunct = res)
+    })
 
-    let getSurveys = async () =>  {
-      const response = await window.urbit.scry({
-        app: "forms",
-        path: "/surveys/live"
-      })
-      surveys = response
-      }
-
-    let getDefunct = async () =>  {
-      const response = await window.urbit.scry({
-        app: "forms",
-        path: "/surveys/defunct"
-      })
-      defunct = response
-      }
-
+    function refreshSurveys(event) {
+      getSurveys(event.detail).then(res => surveys = res)
+      getDefunct(event.detail).then(res => defunct = res)
+    }
 </script>
 
-<MediaQuery query="(min-width: 768px)" let:matches>
+<MediaQuery query="(min-width: 368px)" let:matches>
   {#if matches}
-  <div class="homepage">
-    <RequestSurvey />
-    <CreateSurvey />
-    <SurveysNav surveys={surveys} defunct={defunct}/>
-  </div>
+    <div class="homepage">
+      <RequestSurvey on:update={refreshSurveys}/>
+      <CreateSurvey on:update={refreshSurveys}/>
+      <SurveysNav surveys={surveys} defunct={defunct} /> 
+    </div>
   {/if}
 </MediaQuery>
 
