@@ -1,33 +1,42 @@
 import Urbit from '@urbit/http-api';
+import { writable } from 'svelte/store';
 
-export function getSurveys(ship) {
-  const urbit = new Urbit("")
+const urbit = new Urbit("");
+
+export const surveys = writable(null);
+export const active = writable(null);
+
+export function makeContact(ship) {
   urbit.ship = ship
-    
-  const surveys = urbit.scry({app: "forms", path: "/surveys/live"})
-
-  return surveys
+  window.id = urbit.subscribe({
+    app: "forms",
+    path: "/json",
+    event: handleVoice,
+    quit: reSub,
+    err: subFail
+  })
 }
 
-export function getDefunct(ship) {
-  const urbit = new Urbit("")
-  urbit.ship = ship
-    
-  const defunct = urbit.scry({app: "forms", path: "/surveys/defunct"})
+function handleVoice(update) {
+  surveys.set(update)
+  console.log("handled!")
+}
 
-  return defunct
+function reSub() {
+  console.log("quit")
+}
+
+function subFail() {
+  console.log("err")  
 }
 
 export function createSurvey(ship, data) {
   if (data.title && data.description && data.slug) {
-    const urbit = new Urbit("")
-    urbit.ship = ship
-
     urbit.poke({
       app: "forms",
       mark: "forms-action",
       json: {"create": data},
-      onSuccess: ()=>(console.log("survey created!")),
+      onSuccess: ()=>(makeContact(ship)),
       onError: ()=>(console.log("error handling"))
     })
   } else {console.log("details cannot be empty!")}
@@ -46,3 +55,15 @@ export function requestSurvey(ship, data) {
   })
 }
 
+export function deleteSurvey(ship, data) {
+  console.log(data)
+  const urbit = new Urbit("")
+  urbit.ship = ship
+  urbit.poke({
+      app: "forms",
+      mark: "forms-action",
+      json: {"delete": data},
+      onSuccess: ()=>(console.log("deleted survey")),
+      onError: ()=>(console.log("error handling"))
+  })
+}

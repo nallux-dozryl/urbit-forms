@@ -15,6 +15,8 @@
       (ot ~[title+so description+so visibility+so slug+so rlimit+ni])
       :-  %ask
       (ot ~[author+so slug+so])
+::      :-  %delete
+::      (ot ~[status+so surveyid+so])
     ==
     ?-  -.data
       %create
@@ -23,20 +25,18 @@
       %ask
       =/  =author  `@p`(slav %p +6.data)
       `action`[%ask author +7.data]
+::      %delete
+::      ?>  ?=(action data)  
+::      `action`[%delete +6.data (slav %ud +7.data)]
     ==
 ::
 ++  enjs-update
-  |=  upd=update
+  |=  upd=frontend
   |^  ^-  json
   ?-  -.upd
-      %survey  
-    *json
-      %live
+      %surveys
     ?~  surveys.upd  *json
     (make-json surveys.upd)
-      %defunct
-    ?~  defunct.upd  *json
-    (make-json defunct.upd)
   ==
   ++  make-json
     |=  this-surveys=surveys
@@ -51,15 +51,16 @@
     =+  mini=+.x
     %-  pairs:enjs:format
     :~
-      ['id' s+(scot %uv -.x)]
+      ['id' s+(scot %ud -.x)]
+      ['status' s+status.mini]
       ['author' (ship:enjs:format author.mini)]
       ['slug' s+slug.mini]
       ['title' s+title.mini]
       ['description' s+description.mini]
       ['visibility' s+visibility.mini]
-      ['spawn-time' (sect:enjs:format spawn-time.mini)]
+      ['spawntime' (sect:enjs:format spawn-time.mini)]
       ['qcount' (numb:enjs:format q-count.mini)]
-::      ['questions' (make-qs questions.mini)]
+      ['questions' (make-qs questions.mini)]
     ==
   ::
   ++  make-qs
@@ -102,14 +103,15 @@
 ++  make-survey-id
   |=  [now=@da =author]
   ^-  survey-id
-  =/  present=@ub  (mul 4.294.967.296 (unm:chrono:userlib now))
-  =/  ship-hash=@ub     (shaw author 32 author)
+  =/  present=@ub  (mul 65.536 (unm:chrono:userlib now))
+  =/  ship-hash=@ub     (shaw author 16 author)
   (add present ship-hash)
 ::
 ++  create-survey
   |=  [act=create =author =spawn-time]
   ^-  survey
   :*  author
+      %live
       slug.act
       title.act
       description.act
@@ -125,6 +127,7 @@
   ^-  survey
 
   :*  author
+      %live
       slug.act
       title.act
       description.act

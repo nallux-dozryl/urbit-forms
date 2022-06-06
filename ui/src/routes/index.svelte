@@ -1,40 +1,66 @@
 <script>
-  import { onMount } from 'svelte'
-  import Urbit from '@urbit/http-api'
-  import MediaQuery from '../components/MediaQuery.svelte'
-  import SurveysNav from '../components/SurveysNav.svelte'
-  import RequestSurvey from '../components/RequestSurvey.svelte'
-  import CreateSurvey from '../components/CreateSurvey.svelte'
-  import { getSurveys, getDefunct } from '../UrbitStore'
+    // scripts
+    import { active, surveys, makeContact } from '../UrbitStore'
+    import { onMount } from 'svelte'
 
-    let defunct;
-    let surveys;
+    // components
+    import TopPanel from '../components/TopPanel.svelte'
+    import Surveys from '../components/Surveys.svelte'
+    import CreateSurvey from '../components/CreateSurvey.svelte'
+    import SurveyPub from '../components/SurveyPub.svelte'
+    // states
+      let data;
+      let activeId;
+      surveys.subscribe(res => {data = res})
+      active.subscribe(res => {activeId = res})
 
+  // populate surveys
     onMount(() => {
-      getSurveys(window.ship).then(res => surveys = res)
-      getDefunct(window.ship).then(res => defunct = res)
-    })
+        makeContact(window.ship)
+      })
 
-    function refreshSurveys(event) {
-      getSurveys(event.detail).then(res => surveys = res)
-      getDefunct(event.detail).then(res => defunct = res)
-    }
 </script>
 
-<MediaQuery query="(min-width: 368px)" let:matches>
-  {#if matches}
-    <div class="homepage">
-      <RequestSurvey on:update={refreshSurveys}/>
-      <CreateSurvey on:update={refreshSurveys}/>
-      <SurveysNav surveys={surveys} defunct={defunct} /> 
-    </div>
-  {/if}
-</MediaQuery>
+<div class="full">
+  <div class="sidebar">
+    <TopPanel />
+    {#if data}
+      <Surveys surveys={data} /> 
+    {:else}
+      <span>No forms here!</span>
+    {/if}
+  </div>
+  <div class="main-area">
+    {#if activeId }
+      <SurveyPub survey={data.find(item => item.id === activeId)} />
+      {:else}
+      <CreateSurvey />
+    {/if}
+  </div>
+</div>
 
 <style>
 
-  .homepage {
-    margin: auto;
-    width: 40vw;
+  .full {
+    display: flex;
+    border: 1px solid black;
+    height: calc(100vh - 24px);
   }
+
+  .sidebar {
+    flex: 1;
+    border-right: 2px solid black;
+    height: 100%;
+  }
+
+  .main-area {
+    flex: 3;
+    height: calc(100vh -24px);
+    overflow: scroll;
+  }
+
+  .main-area::-webkit-scrollbar {
+    display: none;
+  }
+
 </style>

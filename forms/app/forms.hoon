@@ -7,7 +7,6 @@
 +$  state-0
   $:  %0
     =surveys
-    =defunct
     =slugs
     =pending
     =subscribers
@@ -39,10 +38,7 @@
   ^-  (quip card _this)
   =/  old  !<(versioned-state old-state)
   ?-  -.old
-    %0
-    ~&  >>
-    (crip (en-json:html (enjs-update:fl live+surveys.old)))
-    `this(state old)
+    %0  `this(state old)
   ==
 ::
 ++  on-poke
@@ -77,15 +73,11 @@
       =/  new-surveys  
         ^+  surveys
         (put:s-orm:fl surveys id this-survey)
-      :-  ~
-      ?:  =(%restricted visibility.act)
-        =/  default-access  ^+  access
-          (~(put by access) id white+*ships)
-        %=  state
-          surveys      new-surveys
-          slugs        new-slugs
-          access       default-access
-        ==
+      :-
+        :~  :*
+          %give  %fact   ~[/json]
+          %forms-json  !>  surveys+surveys
+        ==  ==
       %=  state
         surveys      new-surveys
         slugs        new-slugs
@@ -100,6 +92,7 @@
         %poke   %forms-request  !>  slug+slug.act
       ==  ==
     ==
+      ::
   ++  handle-request
     |=  req=request
     ^-  (quip card _state)
@@ -122,9 +115,9 @@
       %-  (slog leaf+"subscribing to survey" ~)
       :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
-        %pass   /updates/(scot %uv survey-id.req)
+        %pass   /updates/(scot %ud survey-id.req)
         %agent  [src.bowl %forms]
-        %watch  /survey/(scot %uv survey-id.req)
+        %watch  /survey/(scot %ud survey-id.req)
       ==  ==
     ==
   --  
@@ -133,7 +126,7 @@
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
       [%survey @ ~]
-    =/  id=survey-id   (slav %uv i.t.path)
+    =/  id=survey-id   (slav %ud i.t.path)
     =+  survey=(need (get:s-orm:fl surveys id))
     ~|  'invalid permissions'
     ?>  =(%public visibility.survey)
@@ -142,6 +135,12 @@
       %give  %fact   ~
       %forms-update  !>  `update`survey+survey
     ==  ==
+      [%json ~]
+    :_  this
+    :~  :*
+      %give  %fact   ~
+      %forms-json  !>  surveys+surveys
+      ==  ==
   ==
 ++  on-leave  on-leave:def
 ++  on-peek
@@ -149,19 +148,10 @@
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
       [%x %surveys *]
-    ?+    t.t.path  (on-peek:def path)
-        [%live ~]
       ~&  >>  'req surveys'
-      :^  ~  ~  %forms-update
-      !>  ^-  update
-      live+surveys
-      ::
-        [%defunct ~]
-      ~&  >>  'req defunct'
-      :^  ~  ~  %forms-update
-      !>  ^-  update
-      defunct+defunct
-    ==
+      :^  ~  ~  %forms-json
+      !>  ^-  frontend
+      surveys+surveys
   ==
 ++  on-agent
   |=  [=wire =sign:agent:gall]
@@ -194,28 +184,24 @@
       ::
       %kick
       ~&  >>>  'kicked'
-      =+  id=(slav %uv i.t.wire)
+      =+  id=(slav %ud i.t.wire)
       =+  survey=(need (get:s-orm:fl surveys id))
-      =+  new-defunct=(put:s-orm:fl defunct id survey)
-      =+  new-surveys=+:(del:s-orm:fl surveys id)
-      `this(surveys new-surveys, defunct new-defunct)
+      =.  status.survey  %archived
+      =+  new-surveys=(put:s-orm:fl surveys id survey)
+      `this(surveys new-surveys)
       ::
       %fact
       ~&  >>>  'fax'
       ?+  p.cage.sign  (on-agent:def wire sign)
         %forms-update
-        =/  id=survey-id  (slav %uv i.t.wire)
+        =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
           %survey
           =/  new-surveys  ^+  surveys
             (put:s-orm:fl surveys id survey.upd)
-          =/  del-defunct  ^+  surveys
-            +:(del:s-orm:fl defunct id)
-          `this(surveys new-surveys, defunct del-defunct)
+          `this(surveys new-surveys)
           ::
-          %live     `this
-          %defunct  `this
         ==
       ==
     ==

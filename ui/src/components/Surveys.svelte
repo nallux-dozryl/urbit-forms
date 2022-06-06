@@ -1,80 +1,59 @@
 <script>
-  export let title;
-  export let author;
+  // components
+  import SurveyTab from './SurveyTab.svelte'
+  // props
+  export let surveys;
+    let tabs = ['live', 'archived', 'owned'];
+    let selected;
 </script>
 
-  <div class="survey">
-    <div class="offset"></div>
-    <button class="title button">
-      <p class="survey-title">{title}</p>
-      <p>created by {(author === window.ship) ? "me" : "~" + author}</p>
-    </button>
-    <div class="settings">
-      {#if author === window.ship}
-      <button class="setting button">
-        ⚙
-      </button>
-      {/if}
-      <button class="setting button">
-        ⮻
-      </button>
-      <button class="setting button">
-        🗑
-      </button>
+<div class="main">
+  {#if surveys}
+    <select 
+      bind:value={selected}
+    >
+      {#each tabs as tab}
+        <option value={tab}>
+          {tab}
+        </option>
+      {/each}
+    </select>
+    <div class="panel">
+    {#if selected === "owned"}
+      {#each surveys as { title , author, id }}
+        {#if author === window.ship}
+          <SurveyTab title={title} author={author} id={id}/>
+        {/if}
+      {/each}
+    {:else}
+      {#each surveys as { title, author, status, id }}
+        {#if status === selected}
+          <SurveyTab title={title} author={author} id={id}/>
+        {/if}
+      {/each}
+    {/if}
     </div>
-  </div>
+  {:else}
+    <span>yes</span>
+  {/if}
+</div>
 
 <style>
 
-  p {
-    margin: 0;
-  }
 
-  .survey {
-    display: flex;
-    width: 100%;
-    background: white;
-    border: 2px solid black;
-    padding: 6px 0 6px 0;
-    margin-bottom: 4px;
-  }
 
-  .survey:hover {
-    background: black;
-    color: white;
+  .panel {
+    height: 80vh;
+    overflow: auto;
   }
-
-  .survey-title {
-    font-size: 1.333em;
-  }
-
-  .button {
+  select {
+    width: 100%;  
     background: none;
-    border: none;
-    color: inherit;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    border-top: 1px solid black;
+    padding: .6em;
   }
 
-  .offset {
-    flex: 1;
-  }
-
-  .title {
-    flex: 9;
-  }
-
-  .settings {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-  }
-
-  .setting {
-    flex: 1
-  }
-
-  .setting:hover {
-    color: grey;
-  }
-  
 </style>

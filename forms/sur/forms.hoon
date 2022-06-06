@@ -15,6 +15,7 @@
 ::  Main Types
 ::
 +$  survey     $:  =author
+                   =status
                    =slug
                    =title
                    =description
@@ -32,7 +33,7 @@
 ::
 ::  Basic Types
 ::
-+$  survey-id    @uv
++$  survey-id    @ud
 +$  response-id  @ud
 +$  ships        (set ship)
 +$  author       ship
@@ -43,7 +44,7 @@
 +$  spawn-time   @da
 +$  q-count      @ud
 +$  rlimit       @ud
-+$  status       ?(%defunct %live)
++$  status       ?(%archived %live)
 ::
 ::  Answers
 ::
@@ -63,15 +64,15 @@
                  [%grid row=(list @t) column=(list @t)]
              ==
 +$  required     ?
-+$  front    $?  %statement
-                 %short
-                 %long
-                 %one
-                 %many
++$  front    $?  %statement::
+                 %short::
+                 %long::
+                 %one::
+                 %many::
                  %grid-one
                  %grid-many
-                 %linear-discrete
-                 %linear-continuous
+                 %linear-discrete::
+                 %linear-continuous::
                  %calendar
              ==
 +$  back     $?  %text
@@ -137,7 +138,7 @@
 ::  Updates
 ::
 +$  update   $%  [%survey =survey]
-                 [%live =surveys]
-                 [%defunct =defunct]
              ==
++$  frontend  $%  [%surveys =surveys]
+              ==
 --

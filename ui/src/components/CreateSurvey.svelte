@@ -4,7 +4,6 @@
 
   const dispatch = createEventDispatcher()
 
-  let isCreate = false;
   let data = {
     title: "",
     description: "",
@@ -13,15 +12,9 @@
     rlimit: 0
   };
 
-  function newSurvey(ship, data) {
-    createSurvey(ship, data)
-    dispatch('update', ship)
-  }
-
 </script>
 
 <div class="create-container">
-  {#if isCreate}
       <p>Title</p>
       <input 
         type="text"
@@ -60,20 +53,12 @@
           Cancel
         </button>
         <button 
-          on:click={newSurvey(window.ship, data)}
+          on:click={createSurvey(window.ship, data)}
           class="submit"
         >
           Create!
         </button>
       </div>
-  {:else}
-    <button 
-      on:click={()=> isCreate = !isCreate } 
-      class="create-button"
-    >
-      + Create
-    </button>
-  {/if}
 </div>
 
 <style>
