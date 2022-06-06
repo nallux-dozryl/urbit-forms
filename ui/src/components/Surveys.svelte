@@ -40,12 +40,15 @@
 
 <style>
 
-
-
   .panel {
-    height: 80vh;
-    overflow: auto;
+    height: calc(100vh - 117px);
+    overflow: scroll;
   }
+
+  .panel::-webkit-scrollbar {
+    display: none;
+  }
+
   select {
     width: 100%;  
     background: none;

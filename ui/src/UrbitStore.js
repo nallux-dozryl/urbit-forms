@@ -19,7 +19,6 @@ export function makeContact(ship) {
 
 function handleVoice(update) {
   surveys.set(update)
-  console.log("handled!")
 }
 
 function reSub() {

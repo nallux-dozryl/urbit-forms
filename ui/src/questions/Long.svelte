@@ -19,10 +19,6 @@
   
   }
 
-  input:focus {
-    background: white;
-  }
-
   .container {
     min-height: 6em;
     margin: auto;

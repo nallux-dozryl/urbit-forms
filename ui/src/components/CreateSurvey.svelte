@@ -1,8 +1,5 @@
 <script>
   import { createSurvey } from '../UrbitStore'
-	import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher()
 
   let data = {
     title: "",
@@ -47,7 +44,6 @@
 
       <div class="submit-buttons">
         <button
-          on:click={()=> isCreate = !isCreate}
           class="cancel"
         >
           Cancel
@@ -100,22 +96,6 @@
   .submit:hover {
     background: black;
     color: white;
-  }
-
-  .create-button {
-    flex: 1;
-    background: white;
-    border: 2px solid black;
-    padding: 0.618em 0 0.618em 0;
-  }
-
-  .create-button:hover {
-    background: black;  
-    color: white;
-  }
-
-  .info {
-    display: flex;
   }
 
   p {

@@ -35,9 +35,4 @@
     margin: auto;
   }
 
-  .title {
-    font-size: 2em; 
-    padding: .3em
-  }
-
 </style>
