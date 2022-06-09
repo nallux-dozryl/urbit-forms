@@ -8,13 +8,12 @@
   =,  dejs:format
   |=  jon=json
   ^-  action
-  =/  data
-    %.  jon
-    %-  of
-      :~
-        ::ask+(ot ~[author+so slug+so])
-        :-  %create
-        %-  ot 
+  %.  jon
+  %-  of
+    :~
+      ::ask+(ot ~[author+so slug+so])
+      :-  %create
+      %-  ot 
         :~  
           title+so
           description+so 
@@ -46,17 +45,6 @@
           y+(ar so)
         ==
       ==
-  ?-  -.data
-      %qnew
-    `qnew`data
-      %create
-    `create`data
-      %qedit
-    `qedit`data
-  ==
-::      %delete
-::      ?>  ?=(action data)  
-::      `action`[%delete +6.data (slav %ud +7.data)]
 ::
 ++  enjs-update
   |=  upd=frontend

@@ -43,13 +43,15 @@
   {/if}
   <div class="bottom">
     <div class="required">
-      <input
-        bind:checked={qs.required} 
-        type="checkbox"
-        on:change={handleUpdate}
-      />
-      <span>required</span>
-    </div>
+      {#if qs.front !== "statement"}
+        <input
+          bind:checked={qs.required} 
+          type="checkbox"
+          on:change={handleUpdate}
+        />
+        <span>required</span>
+      {/if}
+      </div>
     <select 
       class="front-type" 
       bind:value={qs.front}
@@ -73,8 +75,6 @@
     flex: 2;
     font-size: 0.8em;
   }
-
-
 
   textarea {
     width: 100%;
