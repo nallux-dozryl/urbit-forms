@@ -2,29 +2,29 @@
 ::
 ::  Top Level
 ::
-+$  surveys      ((mop survey-id survey) gth)
-+$  defunct      ((mop survey-id survey) gth)
-+$  slugs        (map slug survey-id)
++$  metas        ((mop survey-id metadata) gth)
++$  content      ((mop survey-id questions) gth)
 +$  pending      (set [author slug])
++$  slugs        (map slug survey-id)
 +$  subscribers  (map survey-id ships)
-+$  access       (map survey-id [restriction=?(%black %white) =ships])
-+$  draft        ((mop survey-id responses) gth)
-+$  submitted    ((mop survey-id responses) gth)
+::+$  access       (map survey-id [restriction=?(%black %white) =ships])
 +$  received     ((mop survey-id responses) gth)
 ::
 ::  Main Types
 ::
-+$  survey     $:  =author
-                   =status
-                   =slug
-                   =title
-                   =description
-                   =visibility
-                   =spawn-time
-                   =rlimit
-                   =q-count
-                   =questions
-               ==
++$  survey     [=metadata =questions]
++$  metadata  $:  
+                =author
+                =status
+                =slug
+                =title
+                =description
+                =visibility
+                =spawn
+                =updated
+                =rlimit
+                =q-count
+              ==
 +$  responses  ((mop response-id response) gth)
 +$  response   $:  =author
                    =survey-id
@@ -41,7 +41,8 @@
 +$  title        @t
 +$  description  @t
 +$  visibility   ?(%public %private %team %restricted)
-+$  spawn-time   @da
++$  spawn        @da
++$  updated      @da
 +$  q-count      @ud
 +$  rlimit       @ud
 +$  status       ?(%archived %live)
@@ -57,24 +58,21 @@
 ::
 +$  questions    ((mop question-id question) lth)
 +$  question-id  @ud
-+$  question     [=q-title =front =back =required =options]
-+$  q-title      @t
-+$  options  $%  %none
-                 [%single column=(list @t)]
-                 [%grid row=(list @t) column=(list @t)]
-             ==
++$  question     [=qtitle =front =back =required x=(list @t) y=(list @t)]
++$  qtitle      @t
 +$  required     ?
-+$  front    $?  %statement::
-                 %short::
-                 %long::
-                 %one::
-                 %many::
-                 %grid-one
-                 %grid-many
-                 %linear-discrete::
-                 %linear-continuous::
-                 %calendar
-             ==
++$  front     $?
+                %statement::
+                %short::
+                %long::
+                %one::
+                %many::
+                %grid-one
+                %grid-many
+                %linear-discrete::
+                %linear-continuous::
+                %calendar
+              ==
 +$  back     $?  %text
                  %noun
                  %grid
@@ -84,12 +82,15 @@
 ::
 +$  action   $%  [%ask =author =slug]
                  create
+                 qnew
+                 qedit
 ::                 clone
 ::                 delete
 ::                 [%edit =survey-id edit]
                  ::submit
              ==
-::
++$  qnew    [%qnew =survey-id question]
++$  qedit   [%qedit =survey-id =question-id =question]
 +$  create       $:  %create 
                      =title 
                      =description 
@@ -111,16 +112,15 @@
                  [%description =description]
                  [%visibility =visibility]
                  [%slug =slug]
-                 [%add-q =q-title =front =back =required =options]
+                 ::[%add-q =q-title =front =back =required =options]
                  [%del-q =question-id]
                  [%move-q old=question-id new=question-id]
                  $:  %edit-q 
                      =question-id 
-                     =q-title 
+                     =qtitle 
                      =front 
                      =back 
                      =required 
-                     =options
                  ==
              ==
 ::
@@ -137,8 +137,10 @@
 ::
 ::  Updates
 ::
-+$  update   $%  [%survey =survey]
++$  update   $%  [%survey survey]
              ==
-+$  frontend  $%  [%surveys =surveys]
++$  frontend  $%
+                [%metas =metas]
+                [%survey [=survey-id survey]]
               ==
 --

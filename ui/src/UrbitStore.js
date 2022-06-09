@@ -3,26 +3,52 @@ import { writable } from 'svelte/store';
 
 const urbit = new Urbit("");
 
-export const surveys = writable(null);
-export const active = writable(null);
+export const metas = writable(null);
+export const active = writable("req");
+export const edit = writable(false);
 
-export function makeContact(ship) {
+export function scryUrbit(ship, path) {
   urbit.ship = ship
-  window.id = urbit.subscribe({
+  const msg = urbit.scry({
     app: "forms",
-    path: "/json",
-    event: handleVoice,
-    quit: reSub,
-    err: subFail
+    path: path,
   })
+  return msg
 }
 
-function handleVoice(update) {
-  surveys.set(update)
-}
+export function setActive(ship, id) {
+  const path = "/survey/" + id
+  scryUrbit(ship, path)
+    .then( res => active.set(res))
+} 
 
-function reSub() {
-  console.log("quit")
+export function editQuestion(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-action",
+    json: {"qedit": data},
+    onSuccess: ()=>(console.log("edit success")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function newQuestion() {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-action",
+    json: {"qnew":
+      {
+        surveyid: "108.446.830.520.448.364",
+        "qtitle": "this is a test questions",
+        "front": "short",
+        "back": "text",
+        "required": false,
+        "x": ["a", "b"],
+        "y": ["cc", "dd"]
+      },
+      onSuccess: ()=>(handleMetas(ship)),
+      onError: ()=>(console.log("error handling"))
+    }
+  })
 }
 
 function subFail() {
@@ -35,21 +61,19 @@ export function createSurvey(ship, data) {
       app: "forms",
       mark: "forms-action",
       json: {"create": data},
-      onSuccess: ()=>(makeContact(ship)),
+      onSuccess: ()=>(handleMetas(ship)),
       onError: ()=>(console.log("error handling"))
     })
   } else {console.log("details cannot be empty!")}
 }
 
 export function requestSurvey(ship, data) {
-  const urbit = new Urbit("")
-  urbit.ship = ship
   let arr = data.split("/")
   urbit.poke({
       app: "forms",
       mark: "forms-action",
       json: {"ask":{"author": arr[0],"slug":arr[1]}},
-      onSuccess: ()=>(console.log("request new surveys")),
+      onSuccess: ()=>(makeContact(ship)),
       onError: ()=>(console.log("error handling"))
   })
 }

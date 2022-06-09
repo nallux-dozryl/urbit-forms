@@ -1,42 +1,49 @@
 <script>
     // scripts
-    import { active, surveys, makeContact } from '../UrbitStore'
+    import { active, metas, scryUrbit } from '../UrbitStore'
     import { onMount } from 'svelte'
 
-    // components
-    import TopPanel from '../components/TopPanel.svelte'
-    import Surveys from '../components/Surveys.svelte'
-    import CreateSurvey from '../components/CreateSurvey.svelte'
-    import SurveyPub from '../components/SurveyPub.svelte'
+    // SideBar
+    import TopPanel from '../SideBar/TopPanel.svelte'
+    import Surveys from '../SideBar/Surveys.svelte'
+
+    // MainArea
+    import CreateSurvey from '../MainArea/CreateSurvey.svelte'
+    import SurveyPub from '../MainArea/SurveyPub.svelte'
+    import RequestSurvey from '../MainArea/RequestSurvey.svelte'
+
     // states
       let data;
-      let activeId;
-      surveys.subscribe(res => {data = res})
-      active.subscribe(res => {activeId = res})
+      let stat;
+      metas.subscribe(res => {data = res})
+      active.subscribe(res => {stat = res})
 
   // populate surveys
     onMount(() => {
-        makeContact(window.ship)
+        scryUrbit(window.ship, "/metas")
+          .then( res => metas.set(res)) 
       })
 
 </script>
 
 <div class="full">
-  <div class="sidebar">
-    <TopPanel />
-    {#if data}
-      <Surveys surveys={data} /> 
-    {:else}
-      <span>No forms here!</span>
-    {/if}
-  </div>
-  <div class="main-area">
-    {#if activeId }
-      <SurveyPub survey={data.find(item => item.id === activeId)} />
-      {:else}
-      <CreateSurvey />
-    {/if}
-  </div>
+    <div class="sidebar">
+        <TopPanel />
+        {#if data}
+            <Surveys surveys={data} /> 
+        {:else}
+            <span>No forms here!</span>
+        {/if}
+    </div>
+    <div class="main-area">
+        {#if stat === "create"}
+            <CreateSurvey />
+        {:else if stat === "req"}
+            <RequestSurvey />
+        {:else}
+            <SurveyPub survey={stat} />
+        {/if}
+    </div>
 </div>
 
 <style>

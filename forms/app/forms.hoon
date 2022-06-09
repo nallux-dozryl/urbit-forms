@@ -6,13 +6,11 @@
   ==
 +$  state-0
   $:  %0
-    =surveys
+    =metas
+    =content
     =slugs
     =pending
     =subscribers
-    =access
-    =draft
-    =submitted
     =received
   ==
 +$  card  card:agent:gall
@@ -65,22 +63,19 @@
       ~|  'slug already exists'
       ?>  =(~ (~(get by slugs) slug.act))
       =+  id=(make-survey-id:fl now.bowl our.bowl)
-      =/  this-survey=survey
-        (create-survey:fl act our.bowl now.bowl)
+      =/  this-metadata=metadata
+        (create-metas:fl act our.bowl now.bowl)
       =/  new-slugs
         ^+  slugs
         (~(put by slugs) slug.act id)
-      =/  new-surveys  
-        ^+  surveys
-        (put:s-orm:fl surveys id this-survey)
-      :-
-        :~  :*
-          %give  %fact   ~[/json]
-          %forms-json  !>  surveys+surveys
-        ==  ==
+      =/  new-metas  
+        ^+  metas
+        (put:m-orm:fl metas id this-metadata)
+      :-  ~
       %=  state
-        surveys      new-surveys
-        slugs        new-slugs
+        content      (put:c-orm:fl content id *questions)
+        metas        (put:m-orm:fl metas id this-metadata)
+        slugs        (~(put by slugs) slug.act id)
         subscribers  (~(put in subscribers) id *ships)
       ==
       ::
@@ -91,8 +86,30 @@
         %agent  [author.act %forms]
         %poke   %forms-request  !>  slug+slug.act
       ==  ==
-    ==
       ::
+        %qnew
+      =+  this-metadata=`metadata`(need (get:m-orm:fl metas survey-id.act))
+      =+  this-questions=`questions`(need (get:c-orm:fl content survey-id.act))
+      =+  inc=+(q-count.this-metadata)
+      =+  new-questions=`questions`(put:q-orm:fl this-questions inc +7:act)
+      =.  q-count.this-metadata
+        `q-count`inc
+      :-  ~
+      %=  state 
+        content  (put:c-orm:fl content survey-id.act new-questions)
+        metas    (put:m-orm:fl metas survey-id.act this-metadata)
+      ==
+        %qedit
+      =+  count=q-count:(need (get:m-orm:fl metas survey-id.act))
+      ?>  (lte question-id.act count)
+      =+  qs=(need (get:c-orm:fl content survey-id.act))
+      =+  new-qs=(put:q-orm:fl qs question-id.act question.act)
+      :-  ~
+      %=  state
+        content  (put:c-orm:fl content survey-id.act new-qs)
+      ==
+    ==
+
   ++  handle-request
     |=  req=request
     ^-  (quip card _state)
@@ -127,31 +144,32 @@
   ?+  path  (on-watch:def path)
       [%survey @ ~]
     =/  id=survey-id   (slav %ud i.t.path)
-    =+  survey=(need (get:s-orm:fl surveys id))
-    ~|  'invalid permissions'
+    =+  this-metadata=(need (get:m-orm:fl metas id))
     ?>  =(%public visibility.survey)
     :_  this(subscribers (add-subs:fl subscribers id src.bowl))
     :~  :*
       %give  %fact   ~
-      %forms-update  !>  `update`survey+survey
+      %forms-update  !>  `update`survey+[this-metadata *questions]
     ==  ==
-      [%json ~]
-    :_  this
-    :~  :*
-      %give  %fact   ~
-      %forms-json  !>  surveys+surveys
-      ==  ==
   ==
 ++  on-leave  on-leave:def
 ++  on-peek
   |=  =path
   ^-  (unit (unit cage))
   ?+    path  (on-peek:def path)
-      [%x %surveys *]
-      ~&  >>  'req surveys'
-      :^  ~  ~  %forms-json
-      !>  ^-  frontend
-      surveys+surveys
+      [%x %metas ~]
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    metas+metas
+      [%x %survey @ ~]
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    =+  id=`survey-id`(slav %ud i.t.t.path)
+    :-  %survey
+    :-  id
+    ^-  survey  
+    :-  metadata=`metadata`(need (get:m-orm:fl metas id))
+    questions=`questions`(need (get:c-orm:fl content id))
   ==
 ++  on-agent
   |=  [=wire =sign:agent:gall]
@@ -185,10 +203,10 @@
       %kick
       ~&  >>>  'kicked'
       =+  id=(slav %ud i.t.wire)
-      =+  survey=(need (get:s-orm:fl surveys id))
-      =.  status.survey  %archived
-      =+  new-surveys=(put:s-orm:fl surveys id survey)
-      `this(surveys new-surveys)
+      =+  this-metadata=(need (get:m-orm:fl metas id))
+      =.  status.this-metadata  %archived
+      =+  new-metas=(put:m-orm:fl metas id this-metadata)
+      `this(metas new-metas)
       ::
       %fact
       ~&  >>>  'fax'
@@ -198,9 +216,12 @@
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
           %survey
-          =/  new-surveys  ^+  surveys
-            (put:s-orm:fl surveys id survey.upd)
-          `this(surveys new-surveys)
+          :-  ~
+          %=  this
+            metas  
+              ^+  metas
+            (put:m-orm:fl metas id metadata.upd)
+          ==
           ::
         ==
       ==

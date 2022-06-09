@@ -1,6 +1,7 @@
 /-  *forms
 |%
-++  s-orm   ((on survey-id survey) gth)
+++  m-orm   ((on survey-id metadata) gth)
+++  c-orm   ((on survey-id questions) gth)
 ++  q-orm   ((on question-id question) lth)
 ::
 ++  dejs-action
@@ -10,93 +11,111 @@
   =/  data
     %.  jon
     %-  of
-    :~  
-      :-  %create 
-      (ot ~[title+so description+so visibility+so slug+so rlimit+ni])
-      :-  %ask
-      (ot ~[author+so slug+so])
-::      :-  %delete
-::      (ot ~[status+so surveyid+so])
-    ==
-    ?-  -.data
+      :~
+        ::ask+(ot ~[author+so slug+so])
+        :-  %create
+        %-  ot 
+        :~  
+          title+so
+          description+so 
+          visibility+(cu |=(x=@tas ?>(?=(visibility x) `visibility`x)) so) 
+          slug+so 
+          rlimit+ni
+        ==
+        :-  %qnew
+        %-  ot 
+        :~
+          surveyid+(cu |=(x=@ta (slav %ud x)) so) 
+          qtitle+so 
+          front+(cu |=(x=@tas ?>(?=(front x) `front`x)) so) 
+          back+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
+          required+bo 
+          x+(ar so) 
+          y+(ar so)
+        ==
+        :-  %qedit
+        %-  ot
+        :~
+          surveyid+(cu |=(x=@ta (slav %ud x)) so)
+          questionid+ni
+          qtitle+so 
+          front+(cu |=(x=@tas ?>(?=(front x) `front`x)) so) 
+          back+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
+          required+bo 
+          x+(ar so) 
+          y+(ar so)
+        ==
+      ==
+  ?-  -.data
+      %qnew
+    `qnew`data
       %create
-      ?>  ?=(action data)  `action`data
-      ::
-      %ask
-      =/  =author  `@p`(slav %p +6.data)
-      `action`[%ask author +7.data]
+    `create`data
+      %qedit
+    `qedit`data
+  ==
 ::      %delete
 ::      ?>  ?=(action data)  
 ::      `action`[%delete +6.data (slav %ud +7.data)]
-    ==
 ::
 ++  enjs-update
   |=  upd=frontend
   |^  ^-  json
   ?-  -.upd
-      %surveys
-    ?~  surveys.upd  *json
-    (make-json surveys.upd)
-  ==
-  ++  make-json
-    |=  this-surveys=surveys
+      %metas
+    ?~  metas.upd  *json
+    (make-metas metas.upd)
+      %survey
     ^-  json
-    :-  %a 
-    %+  turn 
-      `(list [survey-id survey])`(tap:s-orm this-surveys) 
-    make-pairs
-  ::
-  ++  make-pairs
-    |=  x=[survey-id survey]
-    =+  mini=+.x
+    :-  %a
+    :~
+      (make-json-meta [survey-id.upd metadata.upd])
+      (make-qs questions.upd)
+    ==
+  ==
+  ++  make-metas
+    |=  this-metas=metas
+    ^-  json
+    :-  %a
+    %+  turn
+      ^-  (list [survey-id metadata])
+      (tap:m-orm this-metas)
+    make-json-meta
+  ++  make-json-meta
+    |=  x=[survey-id metadata]
+    =+  d=+.x
     %-  pairs:enjs:format
     :~
       ['id' s+(scot %ud -.x)]
-      ['status' s+status.mini]
-      ['author' (ship:enjs:format author.mini)]
-      ['slug' s+slug.mini]
-      ['title' s+title.mini]
-      ['description' s+description.mini]
-      ['visibility' s+visibility.mini]
-      ['spawntime' (sect:enjs:format spawn-time.mini)]
-      ['qcount' (numb:enjs:format q-count.mini)]
-      ['questions' (make-qs questions.mini)]
+      ['status' s+status.d]
+      ['author' (ship:enjs:format author.d)]
+      ['slug' s+slug.d]
+      ['title' s+title.d]
+      ['description' s+description.d]
+      ['visibility' s+visibility.d]
+      ['spawn' (sect:enjs:format spawn.d)]
+      ['updated' (sect:enjs:format updated.d)]
+      ['qcount' (numb:enjs:format q-count.d)]
     ==
   ::
   ++  make-qs
     |=  qs=questions
     ?~  qs
       *json
-    (pairs:enjs:format (turn (tap:q-orm qs) q-pairs))
+    a+(turn (tap:q-orm qs) q-pairs)
   ::
   ++  q-pairs
     |=  q=[question-id question]
-    :-  (scot %ud -.q)
-    (mini-q +.q)
-  ::
-  ++  mini-q
-    |=  mq=question
+    =+  mq=`question`+.q
     %-  pairs:enjs:format
     :~
-      ['q-title' s+q-title.mq]
+      ['qid' (numb:enjs:format -.q)]
+      ['qtitle' s+qtitle.mq]
       ['front' s+front.mq]
       ['back' s+back.mq]
       ['required' b+required.mq]
-      ['options' (check-options options.mq)]
-    ==
-  ::
-  ++  check-options
-    |=  ops=options
-    ?-  -.ops
-        %single
-      %-  frond:enjs:format 
-      ['column' a+(turn column.ops |=(x=@t s+x))]
-        %grid
-      %-  pairs:enjs:format 
-      :~
-        ['row' a+(turn row.ops |=(x=@t s+x))]
-        ['column' a+(turn column.ops |=(x=@t s+x))]
-      ==
+      ['x' a+(turn x.mq |=(z=@t s+z))]
+      ['y' a+(turn y.mq |=(z=@t s+z))]
     ==
   --
 ::
@@ -107,36 +126,36 @@
   =/  ship-hash=@ub     (shaw author 16 author)
   (add present ship-hash)
 ::
-++  create-survey
-  |=  [act=create =author =spawn-time]
-  ^-  survey
+++  create-metas
+  |=  [act=create =author t=@da]
+  ^-  metadata 
   :*  author
       %live
       slug.act
       title.act
       description.act
       visibility.act
-      spawn-time
+      t
+      t
       rlimit.act
       *q-count
-      *questions
   ==
 ::
-++  clone-survey
-  |=  [act=clone jango=survey =author =spawn-time]
-  ^-  survey
-
-  :*  author
-      %live
-      slug.act
-      title.act
-      description.act
-      visibility.act
-      spawn-time
-      rlimit.act
-      q-count.jango
-      questions.jango
-  ==
+::++  clone-survey
+::  |=  [act=clone jango=survey =author =spawn]
+::  ^-  survey
+::
+::  :*  author
+::      %live
+::      slug.act
+::      title.act
+::      description.act
+::      visibility.act
+::      spawn-time
+::      rlimit.act
+::      q-count.jango
+::      questions.jango
+::  ==
 ++  add-subs
   |=  [subs=subscribers id=survey-id =ship]
   ^-  subscribers
