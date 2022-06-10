@@ -7,34 +7,25 @@
 +$  pending      (set [author slug])
 +$  slugs        (map slug survey-id)
 +$  subscribers  (map survey-id ships)
-::+$  access       (map survey-id [restriction=?(%black %white) =ships])
-+$  received     ((mop survey-id responses) gth)
++$  results      ((mop survey-id responses) gth)
+::+$  access  (map survey-id [restriction=?(%black %white) =ships])
 ::
 ::  Main Types
 ::
-+$  survey     [=metadata =questions]
-+$  metadata  $:  
-                =author
-                =status
-                =slug
-                =title
-                =description
-                =visibility
-                =spawn
-                =updated
-                =rlimit
-                =q-count
-              ==
 +$  responses  ((mop response-id response) gth)
-+$  response   $:  =author
-                   =survey-id
-                   =answers
++$  response   [=author =answers]
++$  survey     [=metadata =questions]
++$  metadata   $:  =author       =status
+                   =slug         =title
+                   =description  =visibility
+                   =spawn        =updated
+                   =rlimit       =q-count
                ==
 ::
 ::  Basic Types
 ::
 +$  survey-id    @ud
-+$  response-id  @ud
++$  response-id  ?(@ud %draft)
 +$  ships        (set ship)
 +$  author       ship
 +$  slug         @ta
@@ -50,9 +41,11 @@
 ::  Answers
 ::
 +$  answers     ((mop question-id answer) lth)
-+$  answer  $%  [%single choice=(list @t)]
-                [%grid choice=(list (list @t))]
-            ==
++$  answer      $%
+                  [%grid (list [@t @t])]
+                  [%text @t]
+                  [%list (list @t)]
+                ==
 ::
 ::  Questions
 ::
@@ -74,23 +67,30 @@
                 %calendar
               ==
 +$  back     $?  %text
-                 %noun
+                 %list
                  %grid
              ==
 ::
 ::  Actions
 ::
-+$  action   $%  [%ask =author =slug]
-                 create
-                 qnew
-                 qedit
++$  action   $%  
+               [%submit =author =survey-id =response-id]
+               ask
+               create
+               qnew
+               qedit
+               qdel
+               dedit
 ::                 clone
 ::                 delete
 ::                 [%edit =survey-id edit]
                  ::submit
              ==
++$  ask     [%ask =author =slug]
 +$  qnew    [%qnew =survey-id question]
++$  qdel    [%qdel =survey-id =question-id]
 +$  qedit   [%qedit =survey-id =question-id =question]
++$  dedit   [%dedit =survey-id =question-id]::=answer]
 +$  create       $:  %create 
                      =title 
                      =description 
@@ -113,7 +113,7 @@
                  [%visibility =visibility]
                  [%slug =slug]
                  ::[%add-q =q-title =front =back =required =options]
-                 [%del-q =question-id]
+::                 [%del-q =question-id]
                  [%move-q old=question-id new=question-id]
                  $:  %edit-q 
                      =question-id 
@@ -126,18 +126,18 @@
 ::
 ::  Requests
 ::  
-+$  request  $%  send-slug
-                 send-id
-             ==
-::
-+$  send-slug    [%slug =slug]
-+$  send-id  $%  [%id =slug =survey-id]
-                 [%fail =slug]
++$  request  $%  
+               [%slug =slug]
+               [%id =slug =survey-id]
+               [%fail =slug]
+               [%response =survey-id =response-id =answers]
              ==
 ::
 ::  Updates
 ::
-+$  update   $%  [%survey survey]
++$  update   $% 
+                [%init survey]
+                [%survey survey]
              ==
 +$  frontend  $%
                 [%metas =metas]

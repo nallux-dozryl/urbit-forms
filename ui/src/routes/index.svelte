@@ -1,6 +1,6 @@
 <script>
     // scripts
-    import { active, metas, scryUrbit } from '../UrbitStore'
+    import { active, metas, updateMetas } from '../UrbitStore'
     import { onMount } from 'svelte'
 
     // SideBar
@@ -20,8 +20,8 @@
 
   // populate surveys
     onMount(() => {
-        scryUrbit(window.ship, "/metas")
-          .then( res => metas.set(res)) 
+        updateMetas(window.ship, "/metas")
+        console.log(window.ship)
       })
 
 </script>
@@ -31,6 +31,7 @@
         <TopPanel />
         {#if data}
             <Surveys surveys={data} /> 
+            {console.log(data[0].author)}
         {:else}
             <span>No forms here!</span>
         {/if}

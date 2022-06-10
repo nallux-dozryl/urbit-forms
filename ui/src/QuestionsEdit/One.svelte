@@ -21,6 +21,12 @@
       placeholder="nothing here"  
       on:blur={addOption}
     />
+    <button 
+      class="x-mark" 
+      on:click={()=> x.splice(i,1)}
+    >
+      x
+    </button>
   </div>
 {/each}
 <div class="one">
@@ -36,6 +42,18 @@
 </div>
 
 <style>
+
+  .x-mark {
+    color: red;
+    border: none;
+    background: none;
+  }
+
+  .x-mark:hover {
+    color: pink;
+    background: none;
+
+  }
 
   .dot {
     flex: 1;

@@ -1,10 +1,10 @@
 <script>
-  import { active, editQuestion } from '../UrbitStore'
+  import { frontType, active, editQuestion, delQuestion } from '../UrbitStore'
   import Short from './Short.svelte'
   import One from './One.svelte'
   export let qs
 
-    let fronts = ["statement","short","long","one","many","grid-one","grid-many","linear-discrete","linear-continuous","calendar"];
+    let fronts = frontType
     let selected;
     let data;
     active.subscribe(res => data = res)
@@ -24,13 +24,19 @@
         }
       editQuestion(poke)
     }
-
+    function handleDelete() {
+      const poke = { surveyid: data[0].id, questionid: qs.qid }
+      delQuestion(poke)
+    }
 
 </script>
 
 <div class="container">
   <div class=num>
     Question {qs.qid}
+    <button
+        on:click={handleDelete}
+    >x</button>
   </div>
   <textarea 
     class="qtitle" 
@@ -65,6 +71,17 @@
 </div>
 
 <style>
+
+  button {
+    float: right;
+    border: none;
+    background: none;
+    color: red;
+  }
+
+  button:hover {
+    color: pink;
+  }
 
   .bottom {
     display: flex;

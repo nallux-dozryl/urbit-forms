@@ -2,7 +2,10 @@
 |%
 ++  m-orm   ((on survey-id metadata) gth)
 ++  c-orm   ((on survey-id questions) gth)
+++  r-orm   ((on survey-id responses) gth)  
+++  re-orm  ((on response-id response) lth)
 ++  q-orm   ((on question-id question) lth)
+++  a-orm   ((on question-id answer) lth)
 ::
 ++  dejs-action
   =,  dejs:format
@@ -11,7 +14,12 @@
   %.  jon
   %-  of
     :~
-      ::ask+(ot ~[author+so slug+so])
+      :-  %ask
+      %-  ot
+        :~
+          author+(cu |=(x=@ta `@p`(slav %p x)) so)
+          slug+so
+        ==
       :-  %create
       %-  ot 
         :~  
@@ -44,6 +52,26 @@
           x+(ar so) 
           y+(ar so)
         ==
+        :-  %qdel
+        %-  ot
+        :~
+          surveyid+(cu |=(x=@ta (slav %ud x)) so)
+          questionid+ni
+        ==
+        :::-  %dedit
+       :: %-  ot
+       :: :~
+       ::   surveyid+(cu |=(x=@ta (slav %ud x)) so)
+       ::   questionid+ni
+       ::   :-  %payload
+       ::   %-  of
+       ::   :~
+       ::     text+(ot answer+so)
+       ::   ==
+          ::kind+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
+          ::answer+so
+          ::text+(cu |=(x=@t [%text `@t`x]) so)
+      ::  ==
       ==
 ::
 ++  enjs-update
@@ -76,7 +104,7 @@
     :~
       ['id' s+(scot %ud -.x)]
       ['status' s+status.d]
-      ['author' (ship:enjs:format author.d)]
+      ['author' s+(crip +:(trip (scot %p author.d)))]
       ['slug' s+slug.d]
       ['title' s+title.d]
       ['description' s+description.d]
@@ -128,6 +156,19 @@
       rlimit.act
       *q-count
   ==
+::
+++  check-answer-format
+  =+  n=1
+  |=  [c=q-count qs=questions ans=answers]
+  ?.  (lte n c)  
+    &
+  =+  q=(need (get:q-orm qs n))
+  =+  a=(get:a-orm ans n)
+  ?~  a  
+    ?<  required.q
+    $(n +(n))
+  ?>  =(back.q -:(need a))
+  $(n +(n))
 ::
 ::++  clone-survey
 ::  |=  [act=clone jango=survey =author =spawn]

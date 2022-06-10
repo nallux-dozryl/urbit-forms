@@ -1,5 +1,5 @@
 <script>
-  import { active, edit, setActive } from '../UrbitStore'
+  import { active, edit, setActive, setDraft } from '../UrbitStore'
 
     export let title;
     export let author;
@@ -8,15 +8,11 @@
     let info;
     let isAdmin;
 
-    active.subscribe(res => {
-		  info = res;
-      });
-
-    edit.subscribe(res => {
-      isAdmin = res
-      });
+    active.subscribe(res => { info = res });
+    edit.subscribe(res => { isAdmin = res });
 
     function changeState(ship, id, ed) {
+        setDraft(ship, id)
         setActive(ship, id)
         edit.set(ed)
     }
@@ -48,7 +44,9 @@
       <button class="setting">
         clone
       </button>
-      <button class="delete">
+      <button 
+        on:click={()=> console.log("delete clicked " + id)}      
+        class="delete">
         delete
       </button>
     </div>
