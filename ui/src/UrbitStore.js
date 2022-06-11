@@ -7,7 +7,6 @@ const urbit = new Urbit("");
 // stores
 export const metas = writable(null);
 export const active = writable("req");
-export const draft = writable(null);
 export const edit = writable(false);
 
 // variables
@@ -30,15 +29,9 @@ export function updateMetas(ship, path) {
 }
 
 export function setActive(ship, id) {
-  const s = "/survey/" + id
+  const s = "/active/" + id
   scryUrbit(ship, s).then( res => active.set(res))
 } 
-
-export function setDraft(ship, id) {
-  const d = "/draft/" + id
-//  scryUrbit(ship, d).then( res => draft.set(res))
-  console.log("draft scry")
-}
 
 // question pokes
 
@@ -78,7 +71,7 @@ export function editDraft(data) {
     app: "forms",
     mark: "forms-action",
     json: {dedit: data},
-    onSuccess: ()=>(setDraft(urbit.ship, data.surveyid)),
+    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
     onError: ()=>(console.log("error handling"))
   })
 }

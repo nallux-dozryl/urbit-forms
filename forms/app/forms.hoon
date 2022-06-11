@@ -77,6 +77,10 @@
         metas        (put:m-orm:fl metas id this-metadata)
         slugs        (~(put by slugs) slug.act id)
         subscribers  (~(put in subscribers) id *ships)
+        results      ^+  results
+        =/  n=responses
+          (put:re-orm:fl *responses %draft [our.bowl *answers])
+        (put:r-orm:fl results id n)
       ==
       ::
         %ask
@@ -140,8 +144,15 @@
         metas    (put:m-orm:fl metas survey-id.act this-metas)
       ==
         %dedit
-      ~&  >>  act
-      `state
+      =+  this-ress=(got:r-orm:fl results survey-id.act)
+      =+  resp=(got:re-orm:fl this-ress %draft)
+      =+  this-ans=(put:a-orm:fl answers.resp question-id.act answer.act)
+      =+  new-ress=(put:re-orm:fl this-ress %draft [author.resp this-ans])
+      :-  ~  
+      %=  state
+        results  ^+  results
+        (put:r-orm:fl results survey-id.act new-ress)
+      ==  
     ==
   ++  handle-request
     |=  req=request
@@ -209,16 +220,17 @@
     !>  ^-  frontend
     metas+metas
     ::
-      [%x %survey @ ~]
+      [%x %active @ ~]
     :^  ~  ~  %forms-json
     !>  ^-  frontend
     =+  id=`survey-id`(slav %ud i.t.t.path)
-    :-  %survey
-    :-  id
+    :-  %active
+    :+  id
     ^-  survey  
     :-  metadata=`metadata`(need (get:m-orm:fl metas id))
     questions=`questions`(need (get:c-orm:fl content id))
-    ::
+    ^-  answers
+    answers:(got:re-orm:fl (got:r-orm:fl results id) %draft)
   ==
 ++  on-agent
   |=  [=wire =sign:agent:gall]

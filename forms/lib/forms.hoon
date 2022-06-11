@@ -58,20 +58,19 @@
           surveyid+(cu |=(x=@ta (slav %ud x)) so)
           questionid+ni
         ==
-        :::-  %dedit
-       :: %-  ot
-       :: :~
-       ::   surveyid+(cu |=(x=@ta (slav %ud x)) so)
-       ::   questionid+ni
-       ::   :-  %payload
-       ::   %-  of
-       ::   :~
-       ::     text+(ot answer+so)
-       ::   ==
-          ::kind+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
-          ::answer+so
-          ::text+(cu |=(x=@t [%text `@t`x]) so)
-      ::  ==
+        :-  %dedit
+        %-  ot
+        :~
+          surveyid+(cu |=(x=@ta (slav %ud x)) so)
+          questionid+ni
+          :-  %ans
+          %-  of
+          :~
+            [%text so]
+            [%list (ar so)]
+            [%grid (ar (ot ~[x+so y+so]))]
+          ==
+        ==
       ==
 ::
 ++  enjs-update
@@ -81,14 +80,66 @@
       %metas
     ?~  metas.upd  *json
     (make-metas metas.upd)
-      %survey
+      %active
     ^-  json
     :-  %a
     :~
       (make-json-meta [survey-id.upd metadata.upd])
-      (make-qs questions.upd)
+      (make-qa questions.upd answers.upd)
     ==
   ==
+  ++  make-qa
+    |=  [qs=questions as=answers]
+    ?~  as
+      a+(turn (tap:q-orm qs) empty-draft)
+    =+  qslen=(lent (tap:q-orm qs))
+    a+(pop-draft qs as qslen)
+  ::
+  ++  pop-draft
+    =+  [c=1 r=*(list json)]
+    |=  [qs=questions as=answers qslen=@ud]
+    ?:  (gth c qslen)  (flop r)
+    =+  q=(got:q-orm qs c)
+    =+  ua=(get:a-orm as c)
+    ?~  ua
+      $(c +(c), r `(list json)`[(empty-draft [c q]) r])
+    =+  a=`answer`(need ua)
+    ?.  =(-.a back.q)  
+      $(c +(c), r `(list json)`[(empty-draft [c q]) r])
+    =/  data
+      %-  pairs:enjs:format
+      :~
+        ['qid' (numb:enjs:format c)]
+        ['qtitle' s+qtitle.q]
+        ['front' s+front.q]
+        ['back' s+back.q]
+        ['required' b+required.q]
+        ['x' a+(turn x.q |=(z=@t s+z))]
+        ['y' a+(turn y.q |=(z=@t s+z))]
+        ?-  -.a
+          %text  ['answer' [%s +.a]]
+          %grid  ['answer' a+~]
+          %list  ['answer' [%a ~]]
+        ==
+      ==
+    $(c +(c), r `(list json)`[data r])
+  ::
+  ++  empty-draft
+    |=  [k=@ud q=question]
+    %-  pairs:enjs:format
+    :~
+      ['qid' (numb:enjs:format k)]
+      ['qtitle' s+qtitle.q]
+      ['front' s+front.q]
+      ['back' s+back.q]
+      ['required' b+required.q]
+      ['x' a+(turn x.q |=(z=@t s+z))]
+      ['y' a+(turn y.q |=(z=@t s+z))]
+      ?:  =(%text back.q)
+        ['answer' s+'']
+      ['answer' a+~] 
+    ==
+
   ++  make-metas
     |=  this-metas=metas
     ^-  json
@@ -115,7 +166,7 @@
     ==
   ::
   ++  make-qs
-    |=  qs=questions
+    |=  [qs=questions]
     ?~  qs
       *json
     a+(turn (tap:q-orm qs) q-pairs)

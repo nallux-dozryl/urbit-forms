@@ -1,6 +1,6 @@
 <script>
     // scripts
-    import { active, metas, updateMetas } from '../UrbitStore'
+    import { edit, active, metas, updateMetas } from '../UrbitStore'
     import { onMount } from 'svelte'
 
     // SideBar
@@ -9,19 +9,22 @@
 
     // MainArea
     import CreateSurvey from '../MainArea/CreateSurvey.svelte'
-    import SurveyPub from '../MainArea/SurveyPub.svelte'
     import RequestSurvey from '../MainArea/RequestSurvey.svelte'
+    import SurveyEdit from '../MainArea/SurveyEdit.svelte'
+    import SurveyPub from '../MainArea/SurveyPub.svelte'
+    import SurveyHeader from '../MainArea/SurveyHeader.svelte'
 
     // states
-      let data;
-      let stat;
-      metas.subscribe(res => {data = res})
-      active.subscribe(res => {stat = res})
+      let allMeta;
+      let cur;
+      let isAdmin;
+      metas.subscribe(res => {allMeta = res})
+      active.subscribe(res => {cur = res})
+      edit.subscribe(res => {isAdmin = res})
 
   // populate surveys
     onMount(() => {
         updateMetas(window.ship, "/metas")
-        console.log(window.ship)
       })
 
 </script>
@@ -29,20 +32,23 @@
 <div class="full">
     <div class="sidebar">
         <TopPanel />
-        {#if data}
-            <Surveys surveys={data} /> 
-            {console.log(data[0].author)}
+        {#if allMeta}
+            <Surveys surveys={allMeta} /> 
         {:else}
             <span>No forms here!</span>
         {/if}
     </div>
     <div class="main-area">
-        {#if stat === "create"}
+        {#if cur === "create"}
             <CreateSurvey />
-        {:else if stat === "req"}
+        {:else if cur === "req"}
             <RequestSurvey />
+        {:else if isAdmin}
+          <SurveyHeader survey={cur} admin={isAdmin} />
+          <SurveyEdit survey={cur} />
         {:else}
-            <SurveyPub survey={stat} />
+          <SurveyHeader survey={cur} admin={isAdmin} />
+          <SurveyPub survey={cur} />
         {/if}
     </div>
 </div>

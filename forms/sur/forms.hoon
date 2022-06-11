@@ -90,7 +90,7 @@
 +$  qnew    [%qnew =survey-id question]
 +$  qdel    [%qdel =survey-id =question-id]
 +$  qedit   [%qedit =survey-id =question-id =question]
-+$  dedit   [%dedit =survey-id =question-id]::=answer]
++$  dedit   [%dedit =survey-id =question-id =answer]
 +$  create       $:  %create 
                      =title 
                      =description 
@@ -141,6 +141,6 @@
              ==
 +$  frontend  $%
                 [%metas =metas]
-                [%survey [=survey-id survey]]
+                [%active =survey-id survey =answers]
               ==
 --
