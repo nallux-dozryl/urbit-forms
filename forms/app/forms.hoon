@@ -1,5 +1,5 @@
 /-  *forms
-/+  default-agent, dbug, fl=forms, agentio
+/+  default-agent, dbug, fl=forms
 |%
 +$  versioned-state
   $%  state-0
@@ -22,7 +22,6 @@
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
-    io    ~(. agentio bowl)
 ::
 ++  on-init
   ^-  (quip card _this)
