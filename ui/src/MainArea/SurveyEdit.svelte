@@ -9,7 +9,6 @@
 </script>
 
 <div class="container">
-  {JSON.stringify(survey[1])}
   {#each survey[1] as qs}
     <QContainer qs={qs}/>
   {/each}

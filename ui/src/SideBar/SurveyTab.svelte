@@ -1,18 +1,23 @@
 <script>
-  import { edit, setActive } from '../UrbitStore'
+  import { edit, active, setActive } from '../UrbitStore'
 
     export let title;
     export let author;
     export let id;
 
+    let activeID;
 
+    active.subscribe(res => activeID = res[0].id) 
     function changeState(ship, id, ed) {
         setActive(ship, id)
         edit.set(ed)
     }
 
 </script>
-<div class="item" on:click={()=> changeState(window.ship, id, false)}>
+<div 
+  class="item {activeID === id ? "active" : ""}" 
+  on:click={()=> changeState(window.ship, id, false)}
+>
     <div class="title">{title}</div>
     <div class="author">
       {!(author === window.ship) 

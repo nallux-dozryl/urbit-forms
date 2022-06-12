@@ -15,40 +15,15 @@
       editDraft(data)
   }
 </script>
-<div class="container">
-  <div class="num">
-    Question {q.qid} 
-  </div>
-  <div class="text">
-    {q.qtitle}
-  </div>
-  <input
-    type="text" 
-    placeholder="your answer"
-    on:blur={handleUpdate}
-    bind:value={ans}
-  />
-</div>
+
+<input
+  type="text" 
+  placeholder="your answer"
+  on:blur={handleUpdate}
+  bind:value={ans}
+/>
 
 <style>
-
-  .container {
-    width: 80%;
-    min-height: 6em;
-    margin: auto;
-    border-bottom: 1px solid black;
-  }
-
-  .num {
-    margin: auto;
-    text-align: center;
-    border-bottom: 1px solid black;
-  }
-
-  .text {
-    flex: 19;
-    margin: 2em 0 2em 1em;
-  }
 
   input {
     border: none;

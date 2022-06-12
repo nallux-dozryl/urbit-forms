@@ -20,11 +20,23 @@
           author+(cu |=(x=@ta `@p`(slav %p x)) so)
           slug+so
         ==
+      :-  %delete
+      (ot ~[surveyid+(cu |=(x=@ta (slav %ud x)) so)])
       :-  %create
       %-  ot 
         :~  
           title+so
           description+so 
+          visibility+(cu |=(x=@tas ?>(?=(visibility x) `visibility`x)) so) 
+          slug+so 
+          rlimit+ni
+        ==
+      :-  %medit
+      %-  ot
+        :~
+          surveyid+(cu |=(x=@ta (slav %ud x)) so) 
+          title+so
+          description+so
           visibility+(cu |=(x=@tas ?>(?=(visibility x) `visibility`x)) so) 
           slug+so 
           rlimit+ni
@@ -162,6 +174,7 @@
       ['visibility' s+visibility.d]
       ['spawn' (sect:enjs:format spawn.d)]
       ['updated' (sect:enjs:format updated.d)]
+      ['rlimit' (numb:enjs:format rlimit.d)]
       ['qcount' (numb:enjs:format q-count.d)]
     ==
   ::

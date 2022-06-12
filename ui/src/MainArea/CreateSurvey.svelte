@@ -4,7 +4,7 @@
   let data = {
     title: "",
     description: "",
-    visibility: "public",
+    visibility: "private",
     slug: "",
     rlimit: 0
   };

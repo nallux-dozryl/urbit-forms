@@ -1,5 +1,5 @@
 /-  *forms
-/+  default-agent, dbug, fl=forms
+/+  default-agent, dbug, fl=forms, agentio
 |%
 +$  versioned-state
   $%  state-0
@@ -22,6 +22,7 @@
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
+    io    ~(. agentio bowl)
 ::
 ++  on-init
   ^-  (quip card _this)
@@ -83,6 +84,52 @@
         (put:r-orm:fl results id n)
       ==
       ::
+        %medit
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      =.  updated.this-metadata
+        now.bowl
+      =.  title.this-metadata
+        title.act
+      =.  description.this-metadata
+        description.act
+      =+  dead-slugs=(~(del by slugs) slug.this-metadata)
+      =.  slug.this-metadata
+        slug.act
+      =+  new-slugs=(~(put by dead-slugs) slug.act survey-id.act)
+      =.  visibility.this-metadata
+        visibility.act
+      =.  rlimit.this-metadata
+        rlimit.act
+      =/  this-u-questions=(unit questions)
+        (get:c-orm:fl content survey-id.act)
+      =/  this-questions=questions
+        ?~  this-u-questions
+          ~
+        (need this-u-questions)
+      ?.  =(%private visibility.this-metadata)
+        :_  
+        %=  state
+          metas  (put:m-orm:fl metas survey-id.act this-metadata)
+          slugs  new-slugs
+        ==
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+          %forms-update  !>  `update`metadata+this-metadata
+        ==  ==
+      =/  subs
+        ~(tap in (~(got by subscribers) survey-id.act))
+      :_  
+      %=  state
+        metas        (put:m-orm:fl metas survey-id.act this-metadata)
+        slugs        new-slugs
+        subscribers  (~(del by subscribers) survey-id.act)
+      ==
+      ?:  =(0 (lent subs))
+        ~
+      %+  turn
+        subs
+      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
+        ::
         %ask
       :_  state(pending (~(put in pending) [author.act slug.act]))
       :~  :*
@@ -90,7 +137,7 @@
         %agent  [author.act %forms]
         %poke   %forms-request  !>  slug+slug.act
       ==  ==
-      ::
+        ::
         %submit
       =+  rid=123.123.123
       =+  draft=*answers
@@ -104,45 +151,64 @@
         %agent  [author.act %forms]
         %poke   %forms-request  !>  response+res
       ==  ==
-      ::
+        ::
         %qnew
       =+  this-metadata=`metadata`(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
       =+  this-questions=`questions`(need (get:c-orm:fl content survey-id.act))
       =+  inc=+(q-count.this-metadata)
       =+  new-questions=`questions`(put:q-orm:fl this-questions inc +7:act)
       =.  q-count.this-metadata
         `q-count`inc
-      :-  ~
-      %=  state 
-        content  (put:c-orm:fl content survey-id.act new-questions)
-        metas    (put:m-orm:fl metas survey-id.act this-metadata)
-      ==
+      =.  updated.this-metadata
+        now.bowl
+      :_  %=  state 
+            content  (put:c-orm:fl content survey-id.act new-questions)
+            metas    (put:m-orm:fl metas survey-id.act this-metadata)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`questions+this-questions
+      ==  ==
+        ::
         %qedit
-      =+  count=q-count:(need (get:m-orm:fl metas survey-id.act))
-      ?>  (lte question-id.act count)
+      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
+      ?>  (lte question-id.act q-count.this-metadata)
       =+  qs=(need (get:c-orm:fl content survey-id.act))
       =+  new-qs=(put:q-orm:fl qs question-id.act question.act)
-      :-  ~
-      %=  state
-        content  (put:c-orm:fl content survey-id.act new-qs)
-      ==
+      :_  %=  state
+            content  (put:c-orm:fl content survey-id.act new-qs)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`questions+new-qs
+      ==  ==
+        ::
         %qdel
-      =+  this-metas=(need (get:m-orm:fl metas survey-id.act))
-      ?>  (lte question-id.act q-count.this-metas)
+      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
+      ?>  (lte question-id.act q-count.this-metadata)
       =+  this-questions=(need (get:c-orm:fl content survey-id.act))
       =+  hollow=+:(del:q-orm:fl this-questions question-id.act)
       =/  new-questions=questions
       %^    move-q-up-after-delete:fl 
           hollow 
         +(question-id.act) 
-      q-count.this-metas
-      =.  q-count.this-metas
-        (dec q-count.this-metas)
-      :-  ~ 
-      %=  state
-        content  (put:c-orm:fl content survey-id.act new-questions)
-        metas    (put:m-orm:fl metas survey-id.act this-metas)
-      ==
+      q-count.this-metadata
+      =.  q-count.this-metadata
+        (dec q-count.this-metadata)
+      =.  updated.this-metadata
+        now.bowl
+      :_  %=  state
+            content  (put:c-orm:fl content survey-id.act new-questions)
+            metas    (put:m-orm:fl metas survey-id.act this-metadata)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`survey+[this-metadata new-questions]
+      ==  ==
+        ::
         %dedit
       =+  this-ress=(got:r-orm:fl results survey-id.act)
       =+  resp=(got:re-orm:fl this-ress %draft)
@@ -153,6 +219,38 @@
         results  ^+  results
         (put:r-orm:fl results survey-id.act new-ress)
       ==  
+        ::
+        %delete
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      =+  new-metas=+:(del:m-orm:fl metas survey-id.act)
+      =+  new-content=+:(del:c-orm:fl content survey-id.act)
+      =+  new-slugs=(~(del by slugs) slug.this-metadata)
+      ?.  =(our.bowl author.this-metadata)
+        :_  %=  state
+              metas    new-metas
+              content  new-content
+              slugs    new-slugs
+            ==        
+        :~  :*
+          %pass
+          /updates/(scot %ud survey-id.act)
+          %agent
+          [author.this-metadata %forms]
+          %leave  ~
+        ==  ==
+      =/  subs
+        ~(tap in (~(got by subscribers) survey-id.act))
+      :_  %=  state
+            metas        new-metas
+            content      new-content
+            slugs        new-slugs
+            subscribers  (~(del by subscribers) survey-id.act)
+          ==
+      ?:  =(0 (lent subs))
+        ~
+      %+  turn
+        subs
+      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
     ==
   ++  handle-request
     |=  req=request
@@ -199,7 +297,6 @@
     =+  this-metadata=(need (get:m-orm:fl metas id))
     ?>  =(%public visibility.this-metadata)
     =+  x=(get:c-orm:fl content id)
-    ~&  >>  x
     =/  this-questions=questions
     ?~  x
       *questions
@@ -282,12 +379,29 @@
         =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
-            %survey
+            %metadata
+          :-  ~
+          %=  this
+            metas  ^+  metas
+            (put:m-orm:fl metas id metadata.upd)
+          ==
+          ::
+           %questions
+          :-  ~
+          %=  this
+            content  ^+  content
+            (put:c-orm:fl content id questions.upd)
+          ==
+          ::
+           %survey
           :-  ~
           %=  this
             metas  
               ^+  metas
             (put:m-orm:fl metas id metadata.upd)
+            content
+              ^+  content
+            (put:c-orm:fl content id questions.upd)
           ==
           ::
             %init

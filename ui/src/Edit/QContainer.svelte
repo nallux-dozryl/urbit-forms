@@ -5,7 +5,6 @@
   export let qs
 
     let fronts = frontType
-    let selected;
     let data;
     active.subscribe(res => data = res)
 

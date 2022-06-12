@@ -74,30 +74,27 @@
 ::  Actions
 ::
 +$  action   $%  
-               [%submit =author =survey-id =response-id]
+               medit
                ask
                create
                qnew
                qedit
                qdel
                dedit
-::                 clone
-::                 delete
-::                 [%edit =survey-id edit]
-                 ::submit
+               submit
+               delete
+::               clone
              ==
 +$  ask     [%ask =author =slug]
++$  medit   [%medit =survey-id =title =description =visibility =slug =rlimit]
 +$  qnew    [%qnew =survey-id question]
 +$  qdel    [%qdel =survey-id =question-id]
 +$  qedit   [%qedit =survey-id =question-id =question]
 +$  dedit   [%dedit =survey-id =question-id =answer]
-+$  create       $:  %create 
-                     =title 
-                     =description 
-                     =visibility 
-                     =slug
-                     =rlimit
-                 ==
++$  create  [%create =title =description =visibility =slug =rlimit]
++$  submit  [%submit =author =survey-id =response-id]
++$  delete  [%delete =survey-id]
+::                 [%move-q old=question-id new=question-id]
 +$  clone        $:  %clone
                      =status
                      =survey-id
@@ -107,22 +104,6 @@
                      =slug
                      =rlimit
                  ==
-+$  delete       [%delete =status =survey-id]
-+$  edit     $%  [%title =title]
-                 [%description =description]
-                 [%visibility =visibility]
-                 [%slug =slug]
-                 ::[%add-q =q-title =front =back =required =options]
-::                 [%del-q =question-id]
-                 [%move-q old=question-id new=question-id]
-                 $:  %edit-q 
-                     =question-id 
-                     =qtitle 
-                     =front 
-                     =back 
-                     =required 
-                 ==
-             ==
 ::
 ::  Requests
 ::  
@@ -137,6 +118,8 @@
 ::
 +$  update   $% 
                 [%init survey]
+                [%metadata =metadata]
+                [%questions =questions]
                 [%survey survey]
              ==
 +$  frontend  $%

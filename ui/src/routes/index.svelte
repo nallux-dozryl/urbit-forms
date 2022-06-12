@@ -69,7 +69,7 @@
 
   .main-area {
     flex: 3;
-    height: calc(100vh -24px);
+    height: calc(100vh - 24px);
     overflow: scroll;
   }
 

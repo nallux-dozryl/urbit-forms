@@ -33,6 +33,33 @@ export function setActive(ship, id) {
   scryUrbit(ship, s).then( res => active.set(res))
 } 
 
+// metadata pokes
+export function editMetadata(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-action",
+    json: {"medit": data},
+    onSuccess: ()=>(updateMetas(urbit.ship, "/metas")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+// survey pokes
+
+export function deleteSurvey(data) {
+  urbit.poke({
+      app: "forms",
+      mark: "forms-action",
+      json: {"delete": data},
+      onSuccess: ()=>(afterSurveyDelete()),
+      onError: ()=>(console.log("error handling"))
+  })
+}
+
+function afterSurveyDelete() {
+  active.set("req")
+  updateMetas(window.ship, "/metas")
+}
+
 // question pokes
 
 export function editQuestion(data) {
@@ -111,15 +138,3 @@ function scryUrbit(ship, path) {
   return msg
 }
 
-// unused for now
-export function deleteSurvey(ship, data) {
-  const urbit = new Urbit("")
-  urbit.ship = ship
-  urbit.poke({
-      app: "forms",
-      mark: "forms-action",
-      json: {"delete": data},
-      onSuccess: ()=>(console.log("deleted survey")),
-      onError: ()=>(console.log("error handling"))
-  })
-}
