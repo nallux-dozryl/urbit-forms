@@ -41,11 +41,13 @@
 ::  Answers
 ::
 +$  answers     ((mop question-id answer) lth)
-+$  answer      $%
-                  [%grid (list [@t @t])]
-                  [%text @t]
-                  [%list (list @t)]
++$  answer      $%  agrid
+                    atext
+                    alist
                 ==
++$  agrid   [%grid (list [@t @t])]
++$  atext   [%text @t]
++$  alist   [%list (list @t)]
 ::
 ::  Questions
 ::

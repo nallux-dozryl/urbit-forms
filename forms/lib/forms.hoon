@@ -129,9 +129,17 @@
         ['x' a+(turn x.q |=(z=@t s+z))]
         ['y' a+(turn y.q |=(z=@t s+z))]
         ?-  -.a
-          %text  ['answer' [%s +.a]]
-          %grid  ['answer' a+~]
-          %list  ['answer' [%a ~]]
+            %text  
+          ['answer' [%s +.a]]
+            %list  
+          ['answer' [%a (turn +.a |=(x=@t s+x))]]
+            %grid  
+          :-  'answer' 
+          :-  %a 
+          %+  turn
+            +.a
+          |=  [x=@t y=@t]
+          a+~[s+x s+y]
         ==
       ==
     $(c +(c), r `(list json)`[data r])
