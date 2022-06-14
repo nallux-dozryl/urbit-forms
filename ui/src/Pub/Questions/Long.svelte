@@ -1,33 +1,40 @@
-<div class="container">
-  <div class="text">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Urna condimentum mattis pellentesque id nibh tortor id aliquet. Ornare suspendisse sed nisi lacus sed viverra tellus in hac. Quis auctor elit sed vulputate mi sit. Vel eros donec ac odio tempor orci. Nisi est sit amet facilisis magna etiam.
-  </div>
-  <textarea 
-       placeholder="your answer..."
-  />
-</div>
+<script>
+  import { editDraft } from '../../UrbitStore'
 
+  export let q
+  export let sid
+
+  let ans = q.answer
+
+  function handleUpdate() {
+      const data = {
+          surveyid: sid,
+          questionid: q.qid,
+          ans: {text: ans}
+        }
+      editDraft(data)
+  }
+</script>
+
+<textarea
+  placeholder="your answer"
+  on:blur={handleUpdate}
+  bind:value={ans}
+/>
 
 <style>
 
   textarea {
-    width: 80%;
     border: none;
+    width: 100%;
     padding: 1em;
     margin-bottom: .6em;
     color: black;
   
   }
 
-  .container {
-    min-height: 6em;
-    margin: auto;
-    max-width: 80%;
-    border-bottom: 1px solid black;
-  }
-
-  .text {
-    margin: 2em 0 2em 0;
+  textarea:focus {
+    background: white;
   }
 
 </style>

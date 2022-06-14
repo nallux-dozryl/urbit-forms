@@ -8,8 +8,8 @@
       const data = {
         surveyid: sid,
         qtitle: "",
-        front: qType,
-        back: "text",
+        front: qType[1],
+        back: qType[0],
         required: false,
         x: [],
         y: []
@@ -27,7 +27,7 @@
     >
     {#each frontType as front}
       <option value={front}>
-        {front}
+        {front[1]}
       </option>
     {/each}
   </select>

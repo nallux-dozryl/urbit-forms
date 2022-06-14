@@ -1,54 +1,54 @@
+<script>
+  import { editDraft } from '../../UrbitStore'
+
+  export let q;
+  export let sid;
+
+  function handleUpdate(ox) {
+    const data = {
+      surveyid: sid,
+      questionid: q.qid,
+      ans: {text: ox}
+    }
+    editDraft(data) 
+  }
+</script>
+
 <div class="container">
-  <div class="text">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Urna condimentum mattis pellentesque id nibh tortor id aliquet. Ornare suspendisse sed nisi lacus sed viverra tellus in hac. Quis auctor elit sed vulputate mi sit. Vel eros donec ac odio tempor orci. Nisi est sit amet facilisis magna etiam.
-  </div>
-  <div class="sel">
-    <div class="one">
-      <input type="radio" name="one" />
-      <p>Option</p>
+  {#if q.x}
+    {#each q.x as ox, i}
+    <div class="option">
+      {#if ox === q.answer}
+        <input 
+          on:click={()=> handleUpdate(ox)}
+          type="radio" 
+          name="one"
+          checked
+        />
+      {:else}
+        <input 
+          on:click={()=> handleUpdate(ox)}
+          type="radio" 
+          name="one"
+        />
+      {/if}
+      <label>{ox}</label>
     </div>
-    <div class="one">
-      <input type="radio" name="one" />
-      <p>Option</p>
-    </div>
-  </div>
+    {/each}
+  {/if}
 </div>
 
 
 
 <style>
 
-  .sel {
+  .container {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.6em;
   }
 
-  .one {
+  .option {
     flex: 1;
-    display: flex;
-    padding-top: 1em;
-  }
-
-  input {
-    flex: 1;
-    margin: auto;
-  }
-
-  p {
-    flex: 9;
-    margin: 0;
-  }
-
-  .container {
-    min-height: 6em;
-    margin: auto;
-    max-width: 80%;
-    border-bottom: 1px solid black;
-  }
-
-  .text {
-    margin: 2em 0 2em 0;
   }
 
 </style>

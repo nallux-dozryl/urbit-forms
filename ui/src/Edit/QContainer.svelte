@@ -1,7 +1,9 @@
 <script>
   import { frontType, active, editQuestion, delQuestion } from '../UrbitStore'
   import Short from './Questions/Short.svelte'
+  import Long from './Questions/Long.svelte'
   import One from './Questions/One.svelte'
+  import Many from './Questions/Many.svelte'
   export let qs
 
     let fronts = frontType
@@ -33,9 +35,7 @@
 <div class="container">
   <div class=num>
     Question {qs.qid}
-    <button
-        on:click={handleDelete}
-    >x</button>
+    <button on:click={handleDelete}>x</button>
   </div>
   <textarea 
     class="qtitle" 
@@ -43,8 +43,12 @@
     on:blur={handleUpdate}/>
   {#if qs.front === "short"}
     <Short />
+  {:else if qs.front === "long"}
+    <Long />
   {:else if qs.front === "one"}
-    <One x={qs.x} on:update={handleUpdate}/>
+    <One on:update={handleUpdate} qs={qs} />
+  {:else if qs.front === "many"}
+    <Many on:update={handleUpdate} qs={qs} />
   {/if}
   <div class="bottom">
     <div class="required">
@@ -63,7 +67,7 @@
       on:change={handleUpdate}
     >
       {#each fronts as front}
-        <option value={front}>{front}</option>
+        <option value={front[1]}>{front[1]}</option>
       {/each}
     </select>
   </div>

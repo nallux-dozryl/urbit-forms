@@ -1,11 +1,16 @@
 <script>
   import { active } from '../UrbitStore'
   import Short from './Questions/Short.svelte'
+  import Long from './Questions/Long.svelte'
+  import One from './Questions/One.svelte'
+  import Many from './Questions/Many.svelte'
 
   export let qs
 
     let data;
     active.subscribe(res => data = res)
+
+    let spqs = qs.qtitle.split(/\r?\n/)
 
 </script>
 
@@ -17,10 +22,22 @@
     {/if}
   </div>
   <div class="qtitle">
-    {qs.qtitle}
+    {#each spqs as qsln}
+      {#if qsln}
+        <p class="line">{qsln}</p>
+      {:else}
+        <br />
+      {/if}
+    {/each}
   </div>
   {#if qs.front === "short"}
-    <Short q={qs} sid={data[0].id}/>
+    <Short q={qs} sid={data[0].id} />
+  {:else if qs.front === "long" }
+    <Long q={qs} sid={data[0].id} />
+  {:else if qs.front === "one"}
+    <One q={qs} sid={data[0].id} />
+  {:else if qs.front === "many"}
+    <Many q={qs} sid={data[0].id} />
   {/if}
 </div>
 
@@ -28,6 +45,10 @@
 
   span {
     color: red;
+  }
+
+  .line {
+    margin: 0;
   }
 
   .qtitle {

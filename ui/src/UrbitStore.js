@@ -11,15 +11,16 @@ export const edit = writable(false);
 
 // variables
 export const frontType = [
-      "statement", 
-      "short", 
-      "long", 
-      "one", 
-      "grid-one", 
-      "grid-many",
-      "linear-discrete",
-      "linear-continuous",
-      "calendar"
+      ["text", "statement"], 
+      ["text", "short"], 
+      ["text", "long"], 
+      ["text", "one"],
+      ["list", "many"],
+      ["grid",  "grid-one"], 
+      ["grid",  "grid-many"],
+      ["text", "linear-discrete"],
+      ["text", "linear-continuous"],
+      ["text", "calendar"]
   ]
 
 // store modifiers
@@ -67,7 +68,7 @@ export function editQuestion(data) {
     app: "forms",
     mark: "forms-action",
     json: {"qedit": data},
-    onSuccess: ()=>(console.log("edit success")),
+    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
     onError: ()=>(console.log("error handling"))
 })}
 

@@ -20,7 +20,7 @@
   {#if qs.x}
     {#each qs.x as ox, i}
       <div class="option">
-        <input type="radio" disabled />
+        <input type="checkbox" disabled />
         <input 
           type="text" 
           on:blur={()=> dispatch('update', null)} 

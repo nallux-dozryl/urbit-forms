@@ -110,7 +110,8 @@
   ++  pop-draft
     =+  [c=1 r=*(list json)]
     |=  [qs=questions as=answers qslen=@ud]
-    ?:  (gth c qslen)  (flop r)
+    ?:  (gth c qslen)  
+      (flop r)
     =+  q=(got:q-orm qs c)
     =+  ua=(get:a-orm as c)
     ?~  ua

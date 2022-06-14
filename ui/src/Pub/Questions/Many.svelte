@@ -1,54 +1,57 @@
+<script>
+  import { editDraft } from '../../UrbitStore'
+
+  export let q;
+  export let sid;
+  let checkedStates = [];
+
+  for (let i = 0; i < q.x.length; i++) {
+      if (q.answer.includes(q.x[i])) {
+          checkedStates.push(true)
+      } else {
+      checkedStates.push(false)
+      }
+  }
+
+  $: checked = q.x.filter((_, i) => checkedStates[i]);
+
+    function handleUpdate() {
+      const data = {
+          surveyid: sid,
+          questionid: q.qid,
+          ans: {list: checked}
+        }
+      editDraft(data)
+  }
+
+</script>
 <div class="container">
-  <div class="text">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Urna condimentum mattis pellentesque id nibh tortor id aliquet. Ornare suspendisse sed nisi lacus sed viverra tellus in hac. Quis auctor elit sed vulputate mi sit. Vel eros donec ac odio tempor orci. Nisi est sit amet facilisis magna etiam.
-  </div>
-  <div class="sel">
-    <div class="one">
-      <input type="checkbox" name="many1" />
-      <p>Option</p>
+  {#if q.x}
+    {#each q.x as ox, i}
+    <div class="option">
+        <input 
+          type="checkbox" 
+          name={ox}
+          bind:checked={checkedStates[i]}
+          on:change={handleUpdate}
+        />
+      <label>{ox}</label>
     </div>
-    <div class="one">
-      <input type="checkbox" name="many2" />
-      <p>Option</p>
-    </div>
-  </div>
+    {/each}
+  {/if}
 </div>
 
 
 
 <style>
 
-  .sel {
+  .container {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.6em;
   }
 
-  .one {
+  .option {
     flex: 1;
-    display: flex;
-    padding-top: 1em;
-  }
-
-  input {
-    flex: 1;
-    margin: auto;
-  }
-
-  p {
-    flex: 9;
-    margin: 0;
-  }
-
-  .container {
-    min-height: 6em;
-    margin: auto;
-    max-width: 80%;
-    border-bottom: 1px solid black;
-  }
-
-  .text {
-    margin: 2em 0 2em 0;
   }
 
 </style>
