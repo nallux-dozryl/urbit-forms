@@ -1,33 +1,62 @@
+<script>
+  import { editDraft } from '../../UrbitStore'
+
+  export let q;
+  export let sid;
+
+  function handleUpdate() {
+    const data = {
+      surveyid: sid,
+      questionid: q.qid,
+      ans: {text: q.answer.toString()}
+    }
+    editDraft(data)
+  }
+
+</script>
+
 <div class="container">
-  <div class="text">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Urna condimentum mattis pellentesque id nibh tortor id aliquet. Ornare suspendisse sed nisi lacus sed viverra tellus in hac. Quis auctor elit sed vulputate mi sit. Vel eros donec ac odio tempor orci. Nisi est sit amet facilisis magna etiam.
-  </div>
-  <div class="sel">
-    <div class="one">
-      <input type="range" min="1" max="100" value="50"/>
-    </div>
-  </div>
+  <input 
+    class="slider"
+    type="range" 
+    step="any"
+    min={q.x[0]} 
+    max={q.y[0]}
+    bind:value={q.answer}
+    on:blur={handleUpdate}
+  />
+  <div class="res">{q.answer}</div>
 </div>
 
-
-
 <style>
-
-  .sel {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1.6em;
+  
+  .res {
+    text-align: center;
   }
 
-  .one {
-    flex: 1;
-    display: flex;
-    padding-top: 1em;
+  .slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 25px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
   }
 
-  input {
-    flex: 1;
-    margin: auto;
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: black; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+  }
+
+  .slider::-moz-range-thumb {
+    width: 25px; /* Set a specific slider handle width */
+    height: 25px; /* Slider handle height */
+    background: black; /* Green background */
+    cursor: pointer; /* Cursor on hover */
   }
 
   .container {
@@ -35,10 +64,6 @@
     margin: auto;
     max-width: 80%;
     border-bottom: 1px solid black;
-  }
-
-  .text {
-    margin: 2em 0 2em 0;
   }
 
 </style>

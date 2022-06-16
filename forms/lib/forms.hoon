@@ -140,7 +140,11 @@
           %+  turn
             +.a
           |=  [x=@t y=@t]
-          a+~[s+x s+y]
+          %-  pairs:enjs:format 
+          :~
+            ['x' s+x]
+            ['y' s+y]
+          ==
         ==
       ==
     $(c +(c), r `(list json)`[data r])

@@ -4,6 +4,9 @@
   import Long from './Questions/Long.svelte'
   import One from './Questions/One.svelte'
   import Many from './Questions/Many.svelte'
+  import LinearDisc from './Questions/LinearDisc.svelte'
+  import LinearCont from './Questions/LinearCont.svelte'
+  import GridOne from './Questions/GridOne.svelte'
 
   export let qs
 
@@ -38,6 +41,12 @@
     <One q={qs} sid={data[0].id} />
   {:else if qs.front === "many"}
     <Many q={qs} sid={data[0].id} />
+  {:else if qs.front === "linear-discrete"}
+    <LinearDisc q={qs} sid={data[0].id} />
+  {:else if qs.front === "linear-continuous"}
+    <LinearCont q={qs} sid={data[0].id} />
+  {:else if qs.front === "grid-one"}
+    <GridOne q={qs} sid={data[0].id} />
   {/if}
 </div>
 

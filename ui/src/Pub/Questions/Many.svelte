@@ -35,7 +35,7 @@
           bind:checked={checkedStates[i]}
           on:change={handleUpdate}
         />
-      <label>{ox}</label>
+      <span>{ox}</span>
     </div>
     {/each}
   {/if}
