@@ -10,6 +10,7 @@
   import GridMany from './Questions/GridMany.svelte'
 
   export let qs
+  export let ans
 
     let data;
     active.subscribe(res => data = res)
@@ -35,21 +36,23 @@
     {/each}
   </div>
   {#if qs.front === "short"}
-    <Short q={qs} sid={data[0].id} />
+    <Short q={qs} ans={ans} />
   {:else if qs.front === "long" }
-    <Long q={qs} sid={data[0].id} />
+    <Long q={qs} ans={ans} />
   {:else if qs.front === "one"}
-    <One q={qs} sid={data[0].id} />
+    <One q={qs} ans={ans} />
   {:else if qs.front === "many"}
-    <Many q={qs} sid={data[0].id} />
+    <Many q={qs} ans={ans} />
   {:else if qs.front === "linear-discrete"}
-    <LinearDisc q={qs} sid={data[0].id} />
+    <LinearDisc q={qs} ans={ans} />
   {:else if qs.front === "linear-continuous"}
-    <LinearCont q={qs} sid={data[0].id} />
+    <LinearCont q={qs} ans={ans} />
+<!--
   {:else if qs.front === "grid-one"}
     <GridOne q={qs} sid={data[0].id} />
   {:else if qs.front === "grid-many"}
     <GridMany q={qs} sid={data[0].id} />
+-->
   {/if}
 </div>
 

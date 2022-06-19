@@ -7,7 +7,7 @@ const urbit = new Urbit("");
 // stores
 export const metas = writable(null);
 export const active = writable("req");
-export const edit = writable(false);
+export const responses = writable(null);
 
 // variables
 export const frontType = [
@@ -16,11 +16,11 @@ export const frontType = [
       ["text", "long"], 
       ["text", "one"],
       ["list", "many"],
-      ["grid",  "grid-one"], 
-      ["grid",  "grid-many"],
+//      ["grid",  "grid-one"], 
+//      ["grid",  "grid-many"],
       ["text", "linear-discrete"],
       ["text", "linear-continuous"],
-      ["text", "calendar"]
+//      ["text", "calendar"]
   ]
 
 // store modifiers
@@ -31,7 +31,9 @@ export function updateMetas(ship, path) {
 
 export function setActive(ship, id) {
   const s = "/active/" + id
+  const r = "/responses/" + id
   scryUrbit(ship, s).then( res => active.set(res))
+  scryUrbit(ship, r).then( res => responses.set(res)) 
 } 
 
 // metadata pokes
@@ -99,6 +101,16 @@ export function editDraft(data) {
     app: "forms",
     mark: "forms-action",
     json: {dedit: data},
+    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    onError: ()=>(console.log("error handling"))
+  })
+}
+
+export function submitResponse(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-action",
+    json: {submit: data},
     onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
     onError: ()=>(console.log("error handling"))
   })

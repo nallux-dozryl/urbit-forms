@@ -94,7 +94,7 @@
 +$  qedit   [%qedit =survey-id =question-id =question]
 +$  dedit   [%dedit =survey-id =question-id =answer]
 +$  create  [%create =title =description =visibility =slug =rlimit]
-+$  submit  [%submit =author =survey-id =response-id]
++$  submit  [%submit =survey-id]
 +$  delete  [%delete =survey-id]
 ::                 [%move-q old=question-id new=question-id]
 +$  clone        $:  %clone
@@ -127,5 +127,6 @@
 +$  frontend  $%
                 [%metas =metas]
                 [%active =survey-id survey =answers]
+                [%responses =responses]
               ==
 --

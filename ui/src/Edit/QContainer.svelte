@@ -7,6 +7,7 @@
   import LinearDisc from './Questions/LinearDisc.svelte'
   import LinearCont from './Questions/LinearCont.svelte'
   import GridOne from './Questions/GridOne.svelte'
+  import GridMany from './Questions/GridMany.svelte'
 
   export let qs
 
@@ -28,6 +29,7 @@
           y: q.y
         }
       editQuestion(poke)
+      console.log(poke)
     }
     function handleDelete() {
       const poke = { surveyid: data[0].id, questionid: qs.qid }
@@ -59,6 +61,8 @@
     <LinearCont on:update={handleUpdate} qs={qs} />
   {:else if qs.front === "grid-one"}
     <GridOne on:update={handleUpdate} qs={qs} />
+  {:else if qs.front === "grid-many"}
+    <GridMany on:update={handleUpdate} qs={qs} />
   {/if}
   <div class="bottom">
     <div class="required">

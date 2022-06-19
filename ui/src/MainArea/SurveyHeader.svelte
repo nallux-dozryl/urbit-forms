@@ -1,9 +1,13 @@
 <script>
-  import { edit, deleteSurvey, editMetadata } from '../UrbitStore'
+  import { deleteSurvey, editMetadata } from '../UrbitStore'
+  import SurveyEdit from './SurveyEdit.svelte'
+  import SurveyPub from './SurveyPub.svelte'
+  import Responses from './Responses.svelte'
+  import MyResponses from './MyResponses.svelte'
 
   export let survey;
-  export let admin;
 
+  let tabsel;
   function handleDelete() {
       deleteSurvey({surveyid: survey[0].id})
   }
@@ -22,8 +26,12 @@
     }
 
 </script>
-<div class="container">
-  {#if admin}
+
+<div class=container>
+  <div class="trash" on:click={handleDelete}>
+    delete form
+  </div>
+  {#if tabsel === "edit"}
     <div class="names">
       <input 
         type="text" 
@@ -49,40 +57,40 @@
           <option value="private">Private</option>
           <option value="public">Public</option>
         </select>
-        Response Limit: 
-        <input 
-          type="number" 
-          bind:value={survey[0].rlimit} 
-          on:blur={handleUpdate} 
-        />
       </div>
     </div>
   {:else}
-    <div
-      class="trash"
-      on:click={handleDelete}
-    >
-      delete form
-    </div>
-    {#if survey[0].author === window.ship}
-      <div class="vis-badge">
-        {survey[0].visibility}
-      </div>
-    {/if}
     <div class="names">
       <div class=title>{survey[0].title}</div>
       <div class="description">{survey[0].description}</div>
       <div class="contact">~{survey[0].author}/{survey[0].slug}</div>
     </div>
   {/if}
-  <div class="panel">
-    <div class="tab" on:click={()=> edit.set(false)}>Form</div>
+  <select bind:value={tabsel} class="tabsel">
+    <option value="form">Form</option>
     {#if survey[0].author === window.ship}
-    <div class="tab" on:click={()=> edit.set(true)}>Edit</div>
+      <option value="edit">Edit</option>
+      <option value="allres">Responses</option>
+    {:else}
+      <option value="myres">My Responses</option>
     {/if}
-  </div>
+  </select>
 </div>
+{#if tabsel === "edit"}
+  <SurveyEdit survey={survey} />
+{:else if tabsel === "form"}
+  <SurveyPub survey={survey} />
+{:else if tabsel === "allres"}
+  <Responses survey={survey} />
+{:else if tabsel === "myres"}
+  <MyResponses survey={survey} />
+{/if}
+
 <style>
+
+  .tabsel {
+    margin: 1em;
+  }
 
   .trash {
     text-align: right;
@@ -101,12 +109,6 @@
     width: 3em;
     font-size: .8em;
     position: absolute;
-  }
-
-  .panel {
-    display: flex;
-    margin: auto;
-    width: 60%;
   }
 
   .tab {

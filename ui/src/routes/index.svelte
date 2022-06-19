@@ -1,6 +1,6 @@
 <script>
     // scripts
-    import { edit, active, metas, updateMetas } from '../UrbitStore'
+    import { active, metas, updateMetas } from '../UrbitStore'
     import { onMount } from 'svelte'
 
     // SideBar
@@ -10,17 +10,13 @@
     // MainArea
     import CreateSurvey from '../MainArea/CreateSurvey.svelte'
     import RequestSurvey from '../MainArea/RequestSurvey.svelte'
-    import SurveyEdit from '../MainArea/SurveyEdit.svelte'
-    import SurveyPub from '../MainArea/SurveyPub.svelte'
     import SurveyHeader from '../MainArea/SurveyHeader.svelte'
 
     // states
       let allMeta;
       let cur;
-      let isAdmin;
       metas.subscribe(res => {allMeta = res})
       active.subscribe(res => {cur = res})
-      edit.subscribe(res => {isAdmin = res})
 
   // populate surveys
     onMount(() => {
@@ -43,12 +39,8 @@
             <CreateSurvey />
         {:else if cur === "req"}
             <RequestSurvey />
-        {:else if isAdmin}
-          <SurveyHeader survey={cur} admin={isAdmin} />
-          <SurveyEdit survey={cur} />
         {:else}
-          <SurveyHeader survey={cur} admin={isAdmin} />
-          <SurveyPub survey={cur} />
+          <SurveyHeader survey={cur} />
         {/if}
     </div>
 </div>

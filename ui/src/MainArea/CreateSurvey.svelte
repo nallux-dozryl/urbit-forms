@@ -35,13 +35,6 @@
         placeholder="only-dashes-allowed"
         bind:value={data.slug}
       />
-      <p>Max Submissions per Person (0 for unlimited)</p>
-      <input 
-        min=0
-        type="number"
-        bind:value={data.rlimit}
-      />
-
       <div class="submit-buttons">
         <button
           class="cancel"

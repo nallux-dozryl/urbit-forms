@@ -138,16 +138,22 @@
       ==  ==
         ::
         %submit
-      =+  rid=123.123.123
-      =+  draft=*answers
-      =+  anz=(put:a-orm:fl draft 1 [%text 'doing good'])
-      =+  anztwo=(put:a-orm:fl anz 2 [%text 'didnt have to answer this btw'])
-      =+  anzthree=(put:a-orm:fl anz 3 [%text 'bot'])
-      =+  res=[108.453.367.988.368.748 rid anzthree]
-      :_  state
+      =+  this-response=(got:r-orm:fl results survey-id.act)
+      =/  draft=answers
+        answers:(got:re-orm:fl this-response %draft)
+      =+  this-questions=(got:c-orm:fl content survey-id.act)
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      ?>  (check-answers:fl q-count.this-metadata this-questions draft)
+      =+  survey-author=author:(got:m-orm:fl metas survey-id.act)
+      =+  rid=(make-response-id:fl now.bowl our.bowl survey-id.act)
+      =+  hollow=+:(del:re-orm:fl this-response %draft)
+      =+  new-response=(put:re-orm:fl hollow rid [our.bowl draft])
+      =+  new-draft=(put:re-orm:fl new-response %draft [our.bowl *answers])
+      =+  res=[survey-id.act rid draft]
+      :_  state(results (put:r-orm:fl results survey-id.act new-draft))
       :~  :*
         %pass   /submit
-        %agent  [author.act %forms]
+        %agent  [survey-author %forms]
         %poke   %forms-request  !>  response+res
       ==  ==
         ::
@@ -221,6 +227,7 @@
         ::
         %delete
       =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      =+  new-results=+:(del:r-orm:fl results survey-id.act)
       =+  new-metas=+:(del:m-orm:fl metas survey-id.act)
       =+  new-content=+:(del:c-orm:fl content survey-id.act)
       =+  new-slugs=(~(del by slugs) slug.this-metadata)
@@ -229,6 +236,7 @@
               metas    new-metas
               content  new-content
               slugs    new-slugs
+              results  new-results
             ==        
         :~  :*
           %pass
@@ -238,12 +246,17 @@
           %leave  ~
         ==  ==
       =/  subs
-        ~(tap in (~(got by subscribers) survey-id.act))
+        =+  unit-sub=(~(get by subscribers) survey-id.act)
+        ?~  unit-sub
+          ~
+        ~(tap in (need unit-sub))
+        
       :_  %=  state
             metas        new-metas
             content      new-content
             slugs        new-slugs
             subscribers  (~(del by subscribers) survey-id.act)
+            results      new-results
           ==
       ?:  =(0 (lent subs))
         ~
@@ -279,12 +292,14 @@
       ==  ==
         %response
         ~|  'invalid response'
-        =+  this-metas=(need (get:m-orm:fl metas survey-id.req))
+        =+  this-metas=(got:m-orm:fl metas survey-id.req)
         ?>  =(our.bowl author.this-metas)
-        =/  qs=questions  (need (get:c-orm:fl content survey-id.req))
-        ?>  (check-answer-format:fl q-count.this-metas qs answers.req)
-        ~&  >>  'checks out'
-        `state
+        =/  qs=questions  (got:c-orm:fl content survey-id.req)
+        ?>  (check-answers:fl q-count.this-metas qs answers.req)
+        =+  this-response=(got:r-orm:fl results survey-id.req)
+        =/  new-response
+          (put:re-orm:fl this-response response-id.req [src.bowl answers.req])
+        `state(results (put:r-orm:fl results survey-id.req new-response))
     ==
   --  
 ++  on-watch
@@ -327,6 +342,12 @@
     questions=`questions`(need (get:c-orm:fl content id))
     ^-  answers
     answers:(got:re-orm:fl (got:r-orm:fl results id) %draft)
+      [%x %responses @ ~]
+    =+  id=`survey-id`(slav %ud i.t.t.path)
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    =+  resp=(got:r-orm:fl results id)
+    responses+resp
   ==
 ++  on-agent
   |=  [=wire =sign:agent:gall]

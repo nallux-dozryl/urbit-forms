@@ -1,5 +1,5 @@
 <script>
-  import { edit, active, setActive } from '../UrbitStore'
+  import { active, setActive } from '../UrbitStore'
 
     export let title;
     export let author;
@@ -8,15 +8,14 @@
     let activeID;
 
     active.subscribe(res => activeID = res[0].id) 
-    function changeState(ship, id, ed) {
+    function changeState(ship, id) {
         setActive(ship, id)
-        edit.set(ed)
     }
 
 </script>
 <div 
   class="item {activeID === id ? "active" : ""}" 
-  on:click={()=> changeState(window.ship, id, false)}
+  on:click={()=> changeState(window.ship, id)}
 >
     <div class="title">{title}</div>
     <div class="author">

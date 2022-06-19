@@ -20,6 +20,7 @@
           author+(cu |=(x=@ta `@p`(slav %p x)) so)
           slug+so
         ==
+      [%submit (ot ~[surveyid+(cu |=(x=@ta (slav %ud x)) so)])]
       :-  %delete
       (ot ~[surveyid+(cu |=(x=@ta (slav %ud x)) so)])
       :-  %create
@@ -99,7 +100,44 @@
       (make-json-meta [survey-id.upd metadata.upd])
       (make-qa questions.upd answers.upd)
     ==
+      %responses
+    ^-  json
+    =+  no-draft=+:(del:re-orm +.upd %draft) 
+    a+(turn (tap:re-orm no-draft) make-responses)
   ==
+  ::
+  ++  make-responses
+    |=  [id=response-id =author ans=answers]
+    ?~  ans
+      *json
+    %-  pairs:enjs:format
+    :~  
+      ['author' s+(crip +:(trip (scot %p author)))]
+      ['rid' [%s (scot %ud id)]]
+      ['answers' a+(turn (tap:a-orm ans) make-answers)]
+    ==
+  ++  make-answers
+    |=  [id=@ud a=answer]
+    %-  pairs:enjs:format
+    :~  ['id' (numb:enjs:format id)]
+      ?-  -.a
+          %text  
+        ['answer' [%s +.a]]
+          %list  
+        ['answer' [%a (turn +.a |=(x=@t s+x))]]
+          %grid  
+        :-  'answer' 
+        :-  %a 
+        %+  turn
+          +.a
+        |=  [x=@t y=@t]
+        %-  pairs:enjs:format 
+        :~
+          ['x' s+x]
+          ['y' s+y]
+        ==
+      ==
+    ==
   ++  make-qa
     |=  [qs=questions as=answers]
     ?~  as
@@ -218,6 +256,27 @@
   =/  present=@ub  (mul 65.536 (unm:chrono:userlib now))
   =/  ship-hash=@ub     (shaw author 16 author)
   (add present ship-hash)
+
+++  make-response-id
+  |=  [now=@da =author =survey-id]
+  ^-  response-id
+  =/  present=@ub  (mul 4.294.967.296 (unm:chrono:userlib now))
+  =/  ship-hash=@ub     (mul 65.536 (shaw author 16 author))
+  =/  survey-hash=@ub  (shaw survey-id 16 survey-id)
+  :(add present ship-hash survey-hash)
+::
+++  check-answers
+  =+  n=1
+  |=  [c=q-count qs=questions ans=answers]
+  ?.  (lte n c)  
+    &
+  =+  q=(need (get:q-orm qs n))
+  =+  a=(get:a-orm ans n)
+  ?~  a  
+    ?<  required.q
+    $(n +(n))
+  ?>  =(back.q -:(need a))
+  $(n +(n))
 ::
 ++  create-metas
   |=  [act=create =author t=@da]
