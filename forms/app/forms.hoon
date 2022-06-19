@@ -1,15 +1,3 @@
-::
-::  
-::
-::
-::
-::
-::
-::
-::
-::
-::
-::
 /-  *forms
 /+  default-agent, dbug, fl=forms
 |%
@@ -18,15 +6,12 @@
   ==
 +$  state-0
   $:  %0
-    =surveys
-    =defunct
+    =metas
+    =content
     =slugs
     =pending
     =subscribers
-    =access
-    =draft
-    =submitted
-    =received
+    =results
   ==
 +$  card  card:agent:gall
 --
@@ -63,6 +48,7 @@
     =^  cards  state
       (handle-action !<(action vase))
     [cards this]
+    ::
       %forms-request
     =^  cards  state
       (handle-request !<(request vase))
@@ -73,344 +59,230 @@
     ^-  (quip card _state)
     ?>  =(src our):bowl
     ?-  -.act
-::
-::    Create
-::  Checks if the slug given already exists.
-::  Make the ID for the survey.
-::  Build the actual survey without the questions.
-::  Make the new slug and put into the Slugs state.
-::  Put the newly made survey into the Surveys state.
-::  Check if the visibility type is %restricted
-::  If it is, put an empty whitelist into the Access state.
-::  Update the state.
-::  If it isn't, update the state.
-::
         %create
       ~|  'slug already exists'
       ?>  =(~ (~(get by slugs) slug.act))
       =+  id=(make-survey-id:fl now.bowl our.bowl)
-      =/  this-survey=survey
-        (create-survey:fl act our.bowl now.bowl)
+      =/  this-metadata=metadata
+        (create-metas:fl act our.bowl now.bowl)
       =/  new-slugs
         ^+  slugs
         (~(put by slugs) slug.act id)
-      =/  new-surveys  
-        ^+  surveys
-        (put:s-orm:fl surveys id survey)
+      =/  new-metas  
+        ^+  metas
+        (put:m-orm:fl metas id this-metadata)
       :-  ~
-      ?:  =(%restricted visibility.act)
-        =/  default-access  ^+  access
-          (~(put by access) id white+*ships)
+      %=  state
+        content      (put:c-orm:fl content id *questions)
+        metas        (put:m-orm:fl metas id this-metadata)
+        slugs        (~(put by slugs) slug.act id)
+        subscribers  (~(put in subscribers) id *ships)
+        results      ^+  results
+        =/  n=responses
+          (put:re-orm:fl *responses %draft [our.bowl *answers])
+        (put:r-orm:fl results id n)
+      ==
+      ::
+        %medit
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      =.  updated.this-metadata
+        now.bowl
+      =.  title.this-metadata
+        title.act
+      =.  description.this-metadata
+        description.act
+      =+  dead-slugs=(~(del by slugs) slug.this-metadata)
+      =.  slug.this-metadata
+        slug.act
+      =+  new-slugs=(~(put by dead-slugs) slug.act survey-id.act)
+      =.  visibility.this-metadata
+        visibility.act
+      =.  rlimit.this-metadata
+        rlimit.act
+      =/  this-u-questions=(unit questions)
+        (get:c-orm:fl content survey-id.act)
+      =/  this-questions=questions
+        ?~  this-u-questions
+          ~
+        (need this-u-questions)
+      ?.  =(%private visibility.this-metadata)
+        :_  
         %=  state
-          surveys      new-surveys
-          slugs        new-slugs
-          access       default-access
+          metas  (put:m-orm:fl metas survey-id.act this-metadata)
+          slugs  new-slugs
         ==
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+          %forms-update  !>  `update`metadata+this-metadata
+        ==  ==
+      =/  subs
+        ~(tap in (~(got by subscribers) survey-id.act))
+      :_  
       %=  state
-        surveys      new-surveys
+        metas        (put:m-orm:fl metas survey-id.act this-metadata)
         slugs        new-slugs
-        subscribers  (~(put in subscribers) id *ships)
+        subscribers  (~(del by subscribers) survey-id.act)
       ==
-      ::
-::
-::    Clone
-::  Check if the slug exists.
-::  Make the ID for the survey.
-::  Make the new slug and put it in the Slugs state.
-::  Check if the survey being cloned is in %live or %defunct.
-::  Call the survey Jango
-::  Clone the survey with the new ID and slug
-::  Call the new survey Boba
-::  Put Boba into the Surveys state.
-::  Update the state.
-::
-::  Note: Add the visibility check to Clone. (refer to Create)
-::     
-::        Replace survey with this-survey for consistency.
-::
-      %clone
-      ~|  'cloning failed'
-      ?>  =(~ (~(get by slugs) slug.act))
-      =+  id=(make-survey-id:fl now.bowl our.bowl)
-      =/  new-slugs  ^+  slugs
-        (~(put by slugs) slug.act id)
-      =/  jango=survey
-        ?-  status.act
-          %live
-          (need (get:s-orm:fl surveys survey-id.act))
-          %defunct
-          (need (get:s-orm:fl defunct survey-id.act))
-        ==
-      =+  boba=(clone-survey:fl act jango our.bowl now.bowl)
-      =+  new-surveys=^+(surveys (put:s-orm:fl surveys id boba))
-      :-  ~
+      ?:  =(0 (lent subs))
+        ~
+      %+  turn
+        subs
+      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
+        ::
+        %ask
+      :_  state(pending (~(put in pending) [author.act slug.act]))
+      :~  :*
+        %pass   /slug
+        %agent  [author.act %forms]
+        %poke   %forms-request  !>  slug+slug.act
+      ==  ==
+        ::
+        %submit
+      =+  this-response=(got:r-orm:fl results survey-id.act)
+      =/  draft=answers
+        answers:(got:re-orm:fl this-response %draft)
+      =+  this-questions=(got:c-orm:fl content survey-id.act)
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      ?>  (check-answers:fl q-count.this-metadata this-questions draft)
+      =+  survey-author=author:(got:m-orm:fl metas survey-id.act)
+      =+  rid=(make-response-id:fl now.bowl our.bowl survey-id.act)
+      =+  hollow=+:(del:re-orm:fl this-response %draft)
+      =+  new-response=(put:re-orm:fl hollow rid [our.bowl draft])
+      =+  new-draft=(put:re-orm:fl new-response %draft [our.bowl *answers])
+      =+  res=[survey-id.act rid draft]
+      :_  state(results (put:r-orm:fl results survey-id.act new-draft))
+      :~  :*
+        %pass   /submit
+        %agent  [survey-author %forms]
+        %poke   %forms-request  !>  response+res
+      ==  ==
+        ::
+        %qnew
+      =+  this-metadata=`metadata`(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
+      =+  this-questions=`questions`(need (get:c-orm:fl content survey-id.act))
+      =+  inc=+(q-count.this-metadata)
+      =+  new-questions=`questions`(put:q-orm:fl this-questions inc +7:act)
+      =.  q-count.this-metadata
+        `q-count`inc
+      =.  updated.this-metadata
+        now.bowl
+      :_  %=  state 
+            content  (put:c-orm:fl content survey-id.act new-questions)
+            metas    (put:m-orm:fl metas survey-id.act this-metadata)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`questions+this-questions
+      ==  ==
+        ::
+        %qedit
+      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
+      ?>  (lte question-id.act q-count.this-metadata)
+      =+  qs=(need (get:c-orm:fl content survey-id.act))
+      =+  new-qs=(put:q-orm:fl qs question-id.act question.act)
+      :_  %=  state
+            content  (put:c-orm:fl content survey-id.act new-qs)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`questions+new-qs
+      ==  ==
+        ::
+        %qdel
+      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
+      ?>  =(our.bowl author.this-metadata)
+      ?>  (lte question-id.act q-count.this-metadata)
+      =+  this-questions=(need (get:c-orm:fl content survey-id.act))
+      =+  hollow=+:(del:q-orm:fl this-questions question-id.act)
+      =/  new-questions=questions
+      %^    move-q-up-after-delete:fl 
+          hollow 
+        +(question-id.act) 
+      q-count.this-metadata
+      =.  q-count.this-metadata
+        (dec q-count.this-metadata)
+      =.  updated.this-metadata
+        now.bowl
+      :_  %=  state
+            content  (put:c-orm:fl content survey-id.act new-questions)
+            metas    (put:m-orm:fl metas survey-id.act this-metadata)
+          ==
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
+        %forms-update  !>  `update`survey+[this-metadata new-questions]
+      ==  ==
+        ::
+        %dedit
+      =+  this-ress=(got:r-orm:fl results survey-id.act)
+      =+  resp=(got:re-orm:fl this-ress %draft)
+      =+  this-ans=(put:a-orm:fl answers.resp question-id.act answer.act)
+      =+  new-ress=(put:re-orm:fl this-ress %draft [author.resp this-ans])
+      :-  ~  
       %=  state
-        surveys      new-surveys
-        slugs        new-slugs
-        subscribers  (~(put in subscribers) id *ships)
-      ==
-      ::
-::
-::    Delete
-::  Check if the status is %live.
-::  If it isn't:
-::    Delete the survey from the Defunct state.
-::    Update the state.
-::  If it is:
-::    Get the survey in being deleted from the Surveys state.
-::    Delete the survey from from the Surveys state.
-::    Delete the slug from the the Slugs state
-::    Check if our ship is the same as the author of this survey.
-::    If it isn't:
-::      Leave the subscription of the survey.
-::      Update the state.
-::    If it is:
-::      Get every subscriber of the survey.
-::      Delete the survey entry from the Subscribers state.
-::      Update the state.
-::      Check if the Subscribers is equal 0.
-::      If it is:
-::        Send empty list of cards.
-::      If it isn't:
-::      Kick every subscriber from the subscription.
-::
-::  Note: If visibility is restricted, delete entry
-::        from the Access state.
-::        
-::        Simplify this poke, nested conditionals are confusing!
-::
-::        Replace survey with this-survey for consistency.
-::
-      %delete
-      ?.  =(%live status.act)
-        =+  new-defunct=+:(del:s-orm:fl defunct survey-id.act)
-        `state(defunct new-defunct)
-      ~|  'survey does not exist'
-      =+  survey=(need (get:s-orm:fl surveys survey-id.act))
-      =+  new-surveys=+:(del:s-orm:fl surveys survey-id.act)
-      =+  new-slugs=(~(del by slugs) slug.survey)
-      ?.  =(our.bowl author.survey)
-        :-
+        results  ^+  results
+        (put:r-orm:fl results survey-id.act new-ress)
+      ==  
+        ::
+        %delete
+      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
+      =+  new-results=+:(del:r-orm:fl results survey-id.act)
+      =+  new-metas=+:(del:m-orm:fl metas survey-id.act)
+      =+  new-content=+:(del:c-orm:fl content survey-id.act)
+      =+  new-slugs=(~(del by slugs) slug.this-metadata)
+      ?.  =(our.bowl author.this-metadata)
+        :_  %=  state
+              metas    new-metas
+              content  new-content
+              slugs    new-slugs
+              results  new-results
+            ==        
         :~  :*
           %pass
           /updates/(scot %ud survey-id.act)
           %agent
-          [author.survey %forms]
+          [author.this-metadata %forms]
           %leave  ~
         ==  ==
-        %=  state
-          surveys  new-surveys
-          slugs    new-slugs
-        ==
       =/  subs
-        ~(tap in (need (~(get by subscribers) survey-id.act)))
+        =+  unit-sub=(~(get by subscribers) survey-id.act)
+        ?~  unit-sub
+          ~
+        ~(tap in (need unit-sub))
+        
       :_  %=  state
-            surveys      new-surveys
+            metas        new-metas
+            content      new-content
             slugs        new-slugs
             subscribers  (~(del by subscribers) survey-id.act)
+            results      new-results
           ==
       ?:  =(0 (lent subs))
         ~
       %+  turn
         subs
       |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
-      ::
-::
-::    Edit
-::  Get the survey being edited.
-::  Check if our ship is the author of the survey. Crash if no.
-::  Get the unedited slug for later use if slug is being edited.
-::  Get the 'edit' part of the vase and call it data.
-::  (question edits below)
-::  Modify the Surveys state with the new editions.
-::  
-::  Note: May have been too fancy in this poke, refactor maybe?
-::     
-::        Expand visibility to also create the Access entry for
-::        this specific survey.
-::
-      %edit
-      ~|  'information incorrect'
-      =+  this-survey=`survey`(need (get:s-orm:fl surveys survey-id.act))
-      ?>  =(our.bowl author.this-survey)
-      =+  untouched-slug=slug.this-survey
-      =+  data=`edit`+7.act
-      =/  new-surveys  ^+  surveys
-        %^    put:s-orm:fl
-            surveys
-          survey-id.act
-        ?-  -.data
-            %title
-          =.  title.this-survey
-           title.data
-          this-survey
-          ::
-            %description
-          =.  description.this-survey
-            description.data
-          this-survey
-          ::
-            %visibility
-          =.  visibility.this-survey
-            visibility.data
-          this-survey
-          ::
-            %slug
-          =.  slug.this-survey
-            slug.data
-          this-survey
-          ::
-::
-::    Add-q
-::  Get the q-count of the survey.
-::  Check if the q-count is the same as the number of questions.
-::  Get the new question and call it ques (yeah change this)
-::  Get the questions of the survey.
-::  Put the new question is the questions of the survey.
-::  Increment the q-count.
-::  Modify the survey.
-::
-            %add-q
-          =+  count=q-count.this-survey
-          ?>  =(count ~(wyt by questions.this-survey))
-          =/  ques=question  +.data
-          =/  this-questions=questions  questions.this-survey
-          =/  new-questions=questions
-            (put:q-orm:fl this-questions +(count) ques)
-          =.  questions.this-survey
-            new-questions
-          =.  q-count.this-survey
-            +(count)
-          this-survey
-          ::
-::
-::    Del-q
-::  Delete the question from the survey.
-::  Increment the question-id provided and call it q-below.
-::  Crash if either the question-id provided is higher than
-::    the number of questions or if it is 0.
-::  Move every question below the deleted question up by one space.
-::  Decrement the q-count
-::  Modify the survey.
-::
-          %del-q
-          =/  hollow  +:(del:q-orm:fl questions.this-survey +.data)
-          =+  q-below=+(+.data)
-          =/  new-questions=questions
-          ?<  |((gth +.data q-count.this-survey) =(0 +.data))
-          %^    move-q-up-after-delete:fl
-              hollow 
-            q-below 
-          q-count.this-survey
-          =.  questions.this-survey
-            new-questions
-          =.  q-count.this-survey
-            (dec q-count.this-survey)
-          this-survey
-          ::
-          %move-q
-          ?<
-          ?|    (gth old.data q-count.this-survey)
-              (gth new.data q-count.this-survey)
-            =(0 old.data)  =(0 new.data)
-          ==
-          =/  current=question
-            (need (get:q-orm:fl questions.this-survey old.data))
-          ?:  (gth old.data new.data)  ::  'move up'
-            =/  new-questions=questions
-            (move-qs-down:fl current questions.this-survey old.data new.data)
-            =.  questions.this-survey
-              new-questions
-            this-survey
-          ?>  (gth new.data old.data)  ::  'move down'
-          =/  new-questions=questions
-          (move-qs-up:fl current questions.this-survey old.data new.data)
-          =.  questions.this-survey
-            new-questions
-          this-survey
-          ::
-            %edit-q
-          ?<  (gth question-id.data q-count.this-survey)
-          =/  this-question=question
-            (need (get:q-orm:fl questions.this-survey question-id.data))
-          =.  q-title.this-question
-            q-title.data
-          =.  front.this-question
-            front.data
-          =.  back.this-question
-            back.data
-          =.  required.this-question
-            required.data
-          =.  options.this-question
-            options.data
-          =.  questions.this-survey
-            %^    put:q-orm:fl
-                questions.this-survey 
-              question-id.data 
-            this-question
-          this-survey
-        ==
-        =+  this-survey=`survey`(got:s-orm:fl new-surveys survey-id.act)
-        ?:  =(%private visibility.this-survey)
-          =/  subs
-            ~(tap in (need (~(get by subscribers) survey-id.act)))
-          :_ 
-          %=  state
-              surveys      new-surveys
-              subscribers  (~(put by subscribers) survey-id.act *ships)
-          ==
-          %+  turn
-            subs
-          |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
-        :_
-        ?.  =(+14.act %slug)
-          %=  state
-              surveys  new-surveys
-          ==
-        =/  del-slugs  ^+  slugs
-          (~(del by slugs) untouched-slug)
-        =/  new-slugs  ^+  slugs
-          (~(put by del-slugs) slug.this-survey survey-id.act)
-        %=  state
-            surveys  new-surveys
-            slugs    new-slugs
-        ==
-        :~  :*
-          %give  %fact   ~[/survey/(scot %ud survey-id.act)]
-          %forms-update
-          !>  
-          ^-  update
-          survey+`survey`this-survey
-        ==  ==
-      ::
     ==
   ++  handle-request
     |=  req=request
     ^-  (quip card _state)
     ?-  -.req
-      %ask
-      :_  state(pending (~(put in pending) [author.req slug.req]))
-      :~  :*
-        %pass   /slug
-        %agent  [author.req %forms]
-        %poke   %forms-request  !>  slug+slug.req
-      ==  ==
-      ::
-      %slug
+        %slug
       =+  id=(~(get by slugs) slug.req)
       :_  state
       :~  :*
         %pass   /slug
         %agent  [src.bowl %forms]
-        %poke   %forms-request  !>  
+        %poke   %forms-request  !>
         ?~  id  fail+slug.req  id+[slug.req (need id)]
         ==  ==
       ::
-      %fail
+        %fail
       %-  (slog leaf+"forms doesn't exist!" ~)
       `state(pending (~(del in pending) [src.bowl slug.req]))
       ::
-      %id
+        %id
       %-  (slog leaf+"subscribing to survey" ~)
       :_  state(pending (~(del in pending) [src.bowl slug.req]))
       :~  :*
@@ -418,30 +290,76 @@
         %agent  [src.bowl %forms]
         %watch  /survey/(scot %ud survey-id.req)
       ==  ==
+        %response
+        ~|  'invalid response'
+        =+  this-metas=(got:m-orm:fl metas survey-id.req)
+        ?>  =(our.bowl author.this-metas)
+        =/  qs=questions  (got:c-orm:fl content survey-id.req)
+        ?>  (check-answers:fl q-count.this-metas qs answers.req)
+        =+  this-response=(got:r-orm:fl results survey-id.req)
+        =/  new-response
+          (put:re-orm:fl this-response response-id.req [src.bowl answers.req])
+        `state(results (put:r-orm:fl results survey-id.req new-response))
     ==
   --  
 ++  on-watch
   |=  =path
   ^-  (quip card _this)
   ?+  path  (on-watch:def path)
-    [%survey @ ~]
+      [%survey @ ~]
     =/  id=survey-id   (slav %ud i.t.path)
-    =+  survey=(need (get:s-orm:fl surveys id))
-    ~|  'invalid permissions'
-    ?>  =(%public visibility.survey)
+    =+  this-metadata=(need (get:m-orm:fl metas id))
+    ?>  =(%public visibility.this-metadata)
+    =+  x=(get:c-orm:fl content id)
+    =/  this-questions=questions
+    ?~  x
+      *questions
+    (need x)
     :_  this(subscribers (add-subs:fl subscribers id src.bowl))
     :~  :*
       %give  %fact   ~
-      %forms-update  !>  `update`survey+survey
+      %forms-update  !>  `update`init+[this-metadata this-questions]
     ==  ==
   ==
 ++  on-leave  on-leave:def
-++  on-peek   on-peek:def
+++  on-peek
+  |=  =path
+  ^-  (unit (unit cage))
+  ?+    path  (on-peek:def path)
+      [%x %metas ~]
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    metas+metas
+    ::
+      [%x %active @ ~]
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    =+  id=`survey-id`(slav %ud i.t.t.path)
+    :-  %active
+    :+  id
+    ^-  survey  
+    :-  metadata=`metadata`(need (get:m-orm:fl metas id))
+    questions=`questions`(need (get:c-orm:fl content id))
+    ^-  answers
+    answers:(got:re-orm:fl (got:r-orm:fl results id) %draft)
+      [%x %responses @ ~]
+    =+  id=`survey-id`(slav %ud i.t.t.path)
+    :^  ~  ~  %forms-json
+    !>  ^-  frontend
+    =+  resp=(got:r-orm:fl results id)
+    responses+resp
+  ==
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
   ?+  wire  (on-agent:def wire sign)
     [%slug ~]
+    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
+    ?~  p.sign
+      `this
+    ::
+      %-  %-  slog  ^-  tang  (need p.sign)  `this
+    [%submit ~]
     ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
     ?~  p.sign
       `this
@@ -469,10 +387,10 @@
       %kick
       ~&  >>>  'kicked'
       =+  id=(slav %ud i.t.wire)
-      =+  survey=(need (get:s-orm:fl surveys id))
-      =+  new-defunct=(put:s-orm:fl defunct id survey)
-      =+  new-surveys=+:(del:s-orm:fl surveys id)
-      `this(surveys new-surveys, defunct new-defunct)
+      =+  this-metadata=(need (get:m-orm:fl metas id))
+      =.  status.this-metadata  %archived
+      =+  new-metas=(put:m-orm:fl metas id this-metadata)
+      `this(metas new-metas)
       ::
       %fact
       ~&  >>>  'fax'
@@ -481,13 +399,49 @@
         =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
-          %survey
-          =/  new-surveys  ^+  surveys
-            (put:s-orm:fl surveys id survey.upd)
-          =/  del-defunct  ^+  surveys
-            +:(del:s-orm:fl defunct id)
-          `this(surveys new-surveys, defunct del-defunct)
+            %metadata
+          :-  ~
+          %=  this
+            metas  ^+  metas
+            (put:m-orm:fl metas id metadata.upd)
+          ==
           ::
+           %questions
+          :-  ~
+          %=  this
+            content  ^+  content
+            (put:c-orm:fl content id questions.upd)
+          ==
+          ::
+           %survey
+          :-  ~
+          %=  this
+            metas  
+              ^+  metas
+            (put:m-orm:fl metas id metadata.upd)
+            content
+              ^+  content
+            (put:c-orm:fl content id questions.upd)
+          ==
+          ::
+            %init
+          =+  this-responses=(get:r-orm:fl results id)
+          :-  ~
+          %=  this
+            metas  ^+  metas
+            (put:m-orm:fl metas id metadata.upd)
+            content  ^+  content
+            (put:c-orm:fl content id questions.upd)
+            results  ^+  results
+            ?~  this-responses
+              =/  n=responses
+              (put:re-orm:fl *responses %draft [our.bowl *answers])
+              (put:r-orm:fl results id n)
+            =/  m=responses
+            (put:re-orm:fl (need this-responses) %draft [our.bowl *answers])
+            (put:r-orm:fl results id m)
+          ==
+
         ==
       ==
     ==

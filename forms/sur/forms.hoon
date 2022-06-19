@@ -2,113 +2,101 @@
 ::
 ::  Top Level
 ::
-+$  surveys      ((mop survey-id survey) gth)
-+$  defunct      ((mop survey-id survey) gth)
-+$  slugs        (map slug survey-id)
++$  metas        ((mop survey-id metadata) gth)
++$  content      ((mop survey-id questions) gth)
 +$  pending      (set [author slug])
++$  slugs        (map slug survey-id)
 +$  subscribers  (map survey-id ships)
-+$  access       (map survey-id [restriction=?(%black %white) =ships])
-::  
-::  Splitting these 3 to their own categories actually makes it
-::  easier to handle. Whenever a survey is being filled, the
-::  state that gets updated would be in draft.
-::
-::  Once %submit is called, the agent will check if the response
-::  matches the questions asked. If something is amiss, an error
-::  is thrown and the state doesn't get updated.
-::
-::  If everything is correct, send the response as a poke to the
-::  survey author and move the response to submitted.
-::
-::  The author will receive the response in received.
-::
-+$  draft        ((mop survey-id responses) gth)
-+$  submitted    ((mop survey-id responses) gth)
-+$  received     ((mop survey-id responses) gth)
++$  results      ((mop survey-id responses) gth)
+::+$  access  (map survey-id [restriction=?(%black %white) =ships])
 ::
 ::  Main Types
 ::
-+$  survey     $:  =author
-                   =slug
-                   =title
-                   =description
-                   =visibility
-                   =spawn-time
-                   =r-limit
-                   =q-count
-                   =questions
-               ==
 +$  responses  ((mop response-id response) gth)
-+$  response   $:  =author
-                   =survey-id
-                   =answers
++$  response   [=author =answers]
++$  survey     [=metadata =questions]
++$  metadata   $:  =author       =status
+                   =slug         =title
+                   =description  =visibility
+                   =spawn        =updated
+                   =rlimit       =q-count
                ==
 ::
 ::  Basic Types
 ::
 +$  survey-id    @ud
-+$  response-id  @ud
++$  response-id  ?(@ud %draft)
 +$  ships        (set ship)
 +$  author       ship
 +$  slug         @ta
 +$  title        @t
 +$  description  @t
 +$  visibility   ?(%public %private %team %restricted)
-+$  spawn-time   @da
++$  spawn        @da
++$  updated      @da
 +$  q-count      @ud
-+$  r-limit      @ud
-+$  status       ?(%defunct %live)
++$  rlimit       @ud
++$  status       ?(%archived %live)
 ::
 ::  Answers
 ::
 +$  answers     ((mop question-id answer) lth)
-+$  answer  $%  [%single choice=(list @t)]
-                [%grid choice=(list (list @t))]
-            ==
++$  answer      $%  agrid
+                    atext
+                    alist
+                ==
++$  agrid   [%grid (list [@t @t])]
++$  atext   [%text @t]
++$  alist   [%list (list @t)]
 ::
 ::  Questions
 ::
 +$  questions    ((mop question-id question) lth)
 +$  question-id  @ud
-+$  question     [=q-title =front =back =required =options]
-+$  q-title      @t
-+$  options  $%  %none
-                 [%single column=(list @t)]
-                 [%grid row=(list @t) column=(list @t)]
-             ==
++$  question     [=qtitle =front =back =required x=(list @t) y=(list @t)]
++$  qtitle      @t
 +$  required     ?
-+$  front    $?  %statement
-                 %short
-                 %long
-                 %one
-                 %many
-                 %grid-one
-                 %grid-many
-                 %linear-discrete
-                 %linear-continuous
-                 %calendar
-             ==
++$  front     $?
+                %statement::
+                %short::
+                %long::
+                %one::
+                %many::
+                %grid-one
+                %grid-many
+                %linear-discrete::
+                %linear-continuous::
+                %calendar
+              ==
 +$  back     $?  %text
-                 %noun
+                 %list
                  %grid
              ==
 ::
 ::  Actions
 ::
-+$  action   $%  create
-                 clone
-                 delete
-                 [%edit =survey-id edit]
-                 ::submit
++$  action   $%  
+               medit
+               ask
+               create
+               qnew
+               qedit
+               qdel
+               dedit
+               submit
+               delete
+::               clone
              ==
-::
-+$  create       $:  %create 
-                     =title 
-                     =description 
-                     =visibility 
-                     =slug
-                     =r-limit
-                 ==
++$  ask     [%ask =author =slug]
++$  medit   [%medit =survey-id =title =description =visibility =slug =rlimit]
++$  qnew    [%qnew =survey-id question]
++$  qdel    [%qdel =survey-id =question-id]
++$  qedit   [%qedit =survey-id =question-id =question]
++$  dedit   [%dedit =survey-id =question-id =answer]
++$  create  [%create =title =description =visibility =slug =rlimit]
++$  submit  [%submit =survey-id]
++$  delete  [%delete =survey-id]
+::                 [%move-q old=question-id new=question-id]
 +$  clone        $:  %clone
                      =status
                      =survey-id
@@ -116,41 +104,29 @@
                      =description
                      =visibility
                      =slug
-                     =r-limit
+                     =rlimit
                  ==
-+$  delete       [%delete =status =survey-id]
-+$  edit     $%  [%title =title]
-                 [%description =description]
-                 [%visibility =visibility]
-                 [%slug =slug]
-                 [%add-q =q-title =front =back =required =options]
-                 [%del-q =question-id]
-                 [%move-q old=question-id new=question-id]
-                 $:  %edit-q 
-                     =question-id 
-                     =q-title 
-                     =front 
-                     =back 
-                     =required 
-                     =options
-                 ==
-             ==
 ::
 ::  Requests
 ::  
-+$  request  $%  ask
-                 send-slug
-                 send-id
-             ==
-::
-+$  ask          [%ask =author =slug]
-+$  send-slug    [%slug =slug]
-+$  send-id  $%  [%id =slug =survey-id]
-                 [%fail =slug]
++$  request  $%  
+               [%slug =slug]
+               [%id =slug =survey-id]
+               [%fail =slug]
+               [%response =survey-id =response-id =answers]
              ==
 ::
 ::  Updates
 ::
-+$  update   $%  [%survey =survey]
++$  update   $% 
+                [%init survey]
+                [%metadata =metadata]
+                [%questions =questions]
+                [%survey survey]
              ==
++$  frontend  $%
+                [%metas =metas]
+                [%active =survey-id survey =answers]
+                [%responses =responses]
+              ==
 --
