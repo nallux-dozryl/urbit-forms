@@ -1,72 +1,52 @@
 <script>
-    // scripts
-    import { active, metas, updateMetas } from '../UrbitStore'
-    import { onMount } from 'svelte'
 
-    // SideBar
-    import TopPanel from '../SideBar/TopPanel.svelte'
-    import Surveys from '../SideBar/Surveys.svelte'
+  import { onMount } from 'svelte'
+  import { metas, initMetas, isCreate, createSurvey } from '../UrbitStore' 
+  import Request from '../Homepage/Request.svelte'
+  import Create from '../Homepage/Create.svelte'
+  import MyForms from '../Homepage/MyForms.svelte'
+  import ReqForms from '../Homepage/ReqForms.svelte'
+  import ArchivedForms from '../Homepage/ArchivedForms.svelte'
+  import CreatePage from '../Homepage/CreatePage.svelte'
 
-    // MainArea
-    import CreateSurvey from '../MainArea/CreateSurvey.svelte'
-    import RequestSurvey from '../MainArea/RequestSurvey.svelte'
-    import SurveyHeader from '../MainArea/SurveyHeader.svelte'
-
-    // states
-      let allMeta;
-      let cur;
-      metas.subscribe(res => {allMeta = res})
-      active.subscribe(res => {cur = res})
-
-  // populate surveys
-    onMount(() => {
-        updateMetas(window.ship, "/metas")
-      })
+    onMount(()=> {
+        initMetas(window.ship)
+    })
 
 </script>
 
-<div class="full">
-    <div class="sidebar">
-        <TopPanel />
-        {#if allMeta}
-            <Surveys surveys={allMeta} /> 
-        {:else}
-            <span>No forms here!</span>
-        {/if}
-    </div>
-    <div class="main-area">
-        {#if cur === "create"}
-            <CreateSurvey />
-        {:else if cur === "req"}
-            <RequestSurvey />
-        {:else}
-          <SurveyHeader survey={cur} />
-        {/if}
-    </div>
-</div>
+{#if $isCreate === "scratch"}
+  <CreatePage />
+{:else}
+  <div class="logo">forms</div>
+  <div class="section">
+    <Request />
+  </div>
+  <div class="section">
+    <Create />
+  </div>
+  <div class="section">
+    <MyForms />
+  </div>
+  <div class="section">
+    <ReqForms />
+  </div>
+  <div class="section">
+    <ArchivedForms />
+  </div>
+{/if}
 
 <style>
 
-  .full {
-    display: flex;
-    border: 1px solid black;
-    height: calc(100vh - 24px);
+  .logo {
+    text-align: left;
+    margin: .5em;
+    font-size: 3em;
+    font-weight: 700;
   }
 
-  .sidebar {
-    flex: 1;
-    border-right: 2px solid black;
-    height: 100%;
-  }
-
-  .main-area {
-    flex: 3;
-    height: calc(100vh - 24px);
-    overflow: scroll;
-  }
-
-  .main-area::-webkit-scrollbar {
-    display: none;
+  .section {
+    margin-bottom: 2em;
   }
 
 </style>
