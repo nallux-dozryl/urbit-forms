@@ -1,351 +1,84 @@
 /-  *forms
 |%
-++  m-orm   ((on survey-id metadata) gth)
-++  c-orm   ((on survey-id questions) gth)
-++  r-orm   ((on survey-id responses) gth)  
-++  re-orm  ((on response-id response) lth)
-++  q-orm   ((on question-id question) lth)
-++  a-orm   ((on question-id answer) lth)
-::
-++  dejs-action
-  =,  dejs:format
-  |=  jon=json
-  ^-  action
-  %.  jon
-  %-  of
-    :~
-      :-  %ask
-      %-  ot
-        :~
-          author+(cu |=(x=@ta `@p`(slav %p x)) so)
-          slug+so
-        ==
-      [%submit (ot ~[surveyid+(cu |=(x=@ta (slav %ud x)) so)])]
-      :-  %delete
-      (ot ~[surveyid+(cu |=(x=@ta (slav %ud x)) so)])
-      :-  %create
-      %-  ot 
-        :~  
-          title+so
-          description+so 
-          visibility+(cu |=(x=@tas ?>(?=(visibility x) `visibility`x)) so) 
-          slug+so 
-          rlimit+ni
-        ==
-      :-  %medit
-      %-  ot
-        :~
-          surveyid+(cu |=(x=@ta (slav %ud x)) so) 
-          title+so
-          description+so
-          visibility+(cu |=(x=@tas ?>(?=(visibility x) `visibility`x)) so) 
-          slug+so 
-          rlimit+ni
-        ==
-        :-  %qnew
-        %-  ot 
-        :~
-          surveyid+(cu |=(x=@ta (slav %ud x)) so) 
-          qtitle+so 
-          front+(cu |=(x=@tas ?>(?=(front x) `front`x)) so) 
-          back+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
-          required+bo 
-          x+(ar so) 
-          y+(ar so)
-        ==
-        :-  %qedit
-        %-  ot
-        :~
-          surveyid+(cu |=(x=@ta (slav %ud x)) so)
-          questionid+ni
-          qtitle+so 
-          front+(cu |=(x=@tas ?>(?=(front x) `front`x)) so) 
-          back+(cu |=(x=@tas ?>(?=(back x) `back`x)) so)
-          required+bo 
-          x+(ar so) 
-          y+(ar so)
-        ==
-        :-  %qdel
-        %-  ot
-        :~
-          surveyid+(cu |=(x=@ta (slav %ud x)) so)
-          questionid+ni
-        ==
-        :-  %dedit
-        %-  ot
-        :~
-          surveyid+(cu |=(x=@ta (slav %ud x)) so)
-          questionid+ni
-          :-  %ans
-          %-  of
-          :~
-            [%text so]
-            [%list (ar so)]
-            [%grid (ar (ot ~[x+so y+so]))]
-          ==
-        ==
-      ==
-::
-++  enjs-update
-  |=  upd=frontend
-  |^  ^-  json
-  ?-  -.upd
-      %metas
-    ?~  metas.upd  *json
-    (make-metas metas.upd)
-      %active
-    ^-  json
-    :-  %a
-    :~
-      (make-json-meta [survey-id.upd metadata.upd])
-      (make-qa questions.upd answers.upd)
-    ==
-      %responses
-    ^-  json
-    =+  no-draft=+:(del:re-orm +.upd %draft) 
-    a+(turn (tap:re-orm no-draft) make-responses)
-  ==
-  ::
-  ++  make-responses
-    |=  [id=response-id =author ans=answers]
-    ?~  ans
-      *json
-    %-  pairs:enjs:format
-    :~  
-      ['author' s+(crip +:(trip (scot %p author)))]
-      ['rid' [%s (scot %ud id)]]
-      ['answers' a+(turn (tap:a-orm ans) make-answers)]
-    ==
-  ++  make-answers
-    |=  [id=@ud a=answer]
-    %-  pairs:enjs:format
-    :~  ['id' (numb:enjs:format id)]
-      ?-  -.a
-          %text  
-        ['answer' [%s +.a]]
-          %list  
-        ['answer' [%a (turn +.a |=(x=@t s+x))]]
-          %grid  
-        :-  'answer' 
-        :-  %a 
-        %+  turn
-          +.a
-        |=  [x=@t y=@t]
-        %-  pairs:enjs:format 
-        :~
-          ['x' s+x]
-          ['y' s+y]
-        ==
-      ==
-    ==
-  ++  make-qa
-    |=  [qs=questions as=answers]
-    ?~  as
-      a+(turn (tap:q-orm qs) empty-draft)
-    =+  qslen=(lent (tap:q-orm qs))
-    a+(pop-draft qs as qslen)
-  ::
-  ++  pop-draft
-    =+  [c=1 r=*(list json)]
-    |=  [qs=questions as=answers qslen=@ud]
-    ?:  (gth c qslen)  
-      (flop r)
-    =+  q=(got:q-orm qs c)
-    =+  ua=(get:a-orm as c)
-    ?~  ua
-      $(c +(c), r `(list json)`[(empty-draft [c q]) r])
-    =+  a=`answer`(need ua)
-    ?.  =(-.a back.q)  
-      $(c +(c), r `(list json)`[(empty-draft [c q]) r])
-    =/  data
-      %-  pairs:enjs:format
-      :~
-        ['qid' (numb:enjs:format c)]
-        ['qtitle' s+qtitle.q]
-        ['front' s+front.q]
-        ['back' s+back.q]
-        ['required' b+required.q]
-        ['x' a+(turn x.q |=(z=@t s+z))]
-        ['y' a+(turn y.q |=(z=@t s+z))]
-        ?-  -.a
-            %text  
-          ['answer' [%s +.a]]
-            %list  
-          ['answer' [%a (turn +.a |=(x=@t s+x))]]
-            %grid  
-          :-  'answer' 
-          :-  %a 
-          %+  turn
-            +.a
-          |=  [x=@t y=@t]
-          %-  pairs:enjs:format 
-          :~
-            ['x' s+x]
-            ['y' s+y]
-          ==
-        ==
-      ==
-    $(c +(c), r `(list json)`[data r])
-  ::
-  ++  empty-draft
-    |=  [k=@ud q=question]
-    %-  pairs:enjs:format
-    :~
-      ['qid' (numb:enjs:format k)]
-      ['qtitle' s+qtitle.q]
-      ['front' s+front.q]
-      ['back' s+back.q]
-      ['required' b+required.q]
-      ['x' a+(turn x.q |=(z=@t s+z))]
-      ['y' a+(turn y.q |=(z=@t s+z))]
-      ?:  =(%text back.q)
-        ['answer' s+'']
-      ['answer' a+~] 
-    ==
-
-  ++  make-metas
-    |=  this-metas=metas
-    ^-  json
-    :-  %a
-    %+  turn
-      ^-  (list [survey-id metadata])
-      (tap:m-orm this-metas)
-    make-json-meta
-  ++  make-json-meta
-    |=  x=[survey-id metadata]
-    =+  d=+.x
-    %-  pairs:enjs:format
-    :~
-      ['id' s+(scot %ud -.x)]
-      ['status' s+status.d]
-      ['author' s+(crip +:(trip (scot %p author.d)))]
-      ['slug' s+slug.d]
-      ['title' s+title.d]
-      ['description' s+description.d]
-      ['visibility' s+visibility.d]
-      ['spawn' (sect:enjs:format spawn.d)]
-      ['updated' (sect:enjs:format updated.d)]
-      ['rlimit' (numb:enjs:format rlimit.d)]
-      ['qcount' (numb:enjs:format q-count.d)]
-    ==
-  ::
-  ++  make-qs
-    |=  [qs=questions]
-    ?~  qs
-      *json
-    a+(turn (tap:q-orm qs) q-pairs)
-  ::
-  ++  q-pairs
-    |=  q=[question-id question]
-    =+  mq=`question`+.q
-    %-  pairs:enjs:format
-    :~
-      ['qid' (numb:enjs:format -.q)]
-      ['qtitle' s+qtitle.mq]
-      ['front' s+front.mq]
-      ['back' s+back.mq]
-      ['required' b+required.mq]
-      ['x' a+(turn x.mq |=(z=@t s+z))]
-      ['y' a+(turn y.mq |=(z=@t s+z))]
-    ==
-  --
-::
+++  header-orm   ((on survey-id metadata-1) gth)
+++  stuffing-orm  ((on survey-id sections) gth)
+++  submissions-orm  ((on survey-id responses-1) gth)
+++  sections-orm  ((on section-id section) lth)
+++  section-orm   ((on question-id segment) lth)
 ++  make-survey-id
   |=  [now=@da =author]
   ^-  survey-id
   =/  present=@ub  (mul 65.536 (unm:chrono:userlib now))
   =/  ship-hash=@ub     (shaw author 16 author)
   (add present ship-hash)
-
-++  make-response-id
-  |=  [now=@da =author =survey-id]
-  ^-  response-id
-  =/  present=@ub  (mul 4.294.967.296 (unm:chrono:userlib now))
-  =/  ship-hash=@ub     (mul 65.536 (shaw author 16 author))
-  =/  survey-hash=@ub  (shaw survey-id 16 survey-id)
-  :(add present ship-hash survey-hash)
-::
-++  check-answers
-  =+  n=1
-  |=  [c=q-count qs=questions ans=answers]
-  ?.  (lte n c)  
-    &
-  =+  q=(need (get:q-orm qs n))
-  =+  a=(get:a-orm ans n)
-  ?~  a  
-    ?<  required.q
-    $(n +(n))
-  ?>  =(back.q -:(need a))
-  $(n +(n))
-::
-++  create-metas
-  |=  [act=create =author t=@da]
-  ^-  metadata 
-  :*  author
-      %live
-      slug.act
-      title.act
-      description.act
-      visibility.act
-      t
-      t
-      rlimit.act
-      *q-count
-  ==
-::
-++  check-answer-format
-  =+  n=1
-  |=  [c=q-count qs=questions ans=answers]
-  ?.  (lte n c)  
-    &
-  =+  q=(need (get:q-orm qs n))
-  =+  a=(get:a-orm ans n)
-  ?~  a  
-    ?<  required.q
-    $(n +(n))
-  ?>  =(back.q -:(need a))
-  $(n +(n))
-::
-::++  clone-survey
-::  |=  [act=clone jango=survey =author =spawn]
-::  ^-  survey
-::
-::  :*  author
-::      %live
-::      slug.act
-::      title.act
-::      description.act
-::      visibility.act
-::      spawn-time
-::      rlimit.act
-::      q-count.jango
-::      questions.jango
-::  ==
+++  create-metadata-1
+  |=  [c=create a=author t=@da]
+  ^-  metadata-1
+  [a %live slug.c title.c description.c visibility.c t t rlimit.c [~[0] 1]]
 ++  add-subs
   |=  [subs=subscribers id=survey-id =ship]
   ^-  subscribers
-  =+  ships=(need (~(get by subs) id))
+  =+  ships=(~(got by subs) id)
   (~(put by subs) id (~(put in ships) ship))
-::
-++  move-q-up-after-delete
-  |=  [qs=questions qid=question-id =q-count]
-  ?:  (gth qid q-count)  qs
-  =/  current=question  (need (get:q-orm qs qid))
-  =/  undeleted=questions  (put:q-orm qs (dec qid) current)
-  =/  new-questions=questions  +:(del:q-orm undeleted qid)
-  $(qid +(qid), qs new-questions)
-::
-++  move-qs-down
-  |=  [current=question qs=questions old=question-id new=question-id]
-  ?:  (lte old new)  (put:q-orm qs new current)
-  =/  unmoved=question  (need (get:q-orm qs (dec old)))
-  =/  moved=questions  (put:q-orm qs old unmoved)
-  $(qs moved, old (dec old))
-::
-++  move-qs-up
-  |=  [current=question qs=questions old=question-id new=question-id]
-  ?:  (gte old new)  (put:q-orm qs new current)
-  =/  unmoved=question  (need (get:q-orm qs +(old)))
-  =/  moved=questions  (put:q-orm qs old unmoved)
-  $(qs moved, old +(old))
+++  check-response
+  |=  [q=sections a=sections]
+  ::  turn section keys into list
+  ::  loop through each key and loop again for each question
+  ::  all passed answers is put into a new mop
+  ::  all failed answers put into another mop
+  ::  if no failed answers, submit response
+  ::  if failed answers, prompted front end regarding fucked up
+  ::  questions.
+  =+  secs=(sort `(list @ud)`~(tap in ~(key by q)) lth)
+  |-
+  =+  qs=(got:sections-orm q +2:secs)
+  =+  as=(got:sections-orm a +2:secs)
+  (compare-q-a qs as)
+++  compare-q-a
+  |=  [q=section a=section]
+  =+  qs=(sort `(list @ud)`~(tap in ~(key by q)) lth)
+  ~&  >>
+  =+  cuq=(got:section-orm q +2:qs)
+  =+  [failed=*(list) succeeded=*(list)]
+  |-
+  ?+  -.cuq  !!
+      %question
+    =+  qac=accept.cuq
+    =+  req=required.cuq
+    ?:  =((lent qs) 0)  
+      [failed=(flop failed) succeeded=(flop succeeded)]
+    =+  ucua=(get:section-orm a +2:qs)
+    ?+  (check-answer qac req ucua)  !!
+        %failed
+      $(failed [+2:qs failed], qs +3:qs)
+        %succeed
+      $(succeeded [+2:qs succeeded], qs +3.qs)
+    ==
+  ==
+  qs
+++  check-answer
+  |=  [qac=@tas req=? ucua=(unit segment)]
+  ?~  ucua
+    ?:  req
+      `@tas`%failed
+    `@tas`%succeed
+  =+  cua=(need ucua)
+  ?+  -.cua  !!
+      %answer
+    ?.  =(qac accept.cua)
+      `@tas`%failed
+    ?.  req
+      `@tas`%succeed
+    ?+  accept.cua  `@tas`%failed
+        %text
+      ?:  =('' (snag 0 a.cua))
+        `@tas`%failed
+      `@tas`%succeed
+    ==
+  ==
+
+    
+
+
+
 --

@@ -1,14 +1,14 @@
 /-  *forms
 /+  *enjs
-|_  upd=frontend
+|_  upd=cmd
 ++  grow
   |%
   ++  noun  upd
-  ++  json  (enjs-update upd)
+  ++  json  (enjs-cmd upd)
   --
 ++  grab
   |%
-  ++  noun  frontend
+  ++  noun  cmd
   --
 ++  grad  %noun
 --

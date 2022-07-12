@@ -2,25 +2,69 @@
 ::
 ::  Top Level
 ::
-+$  metas        ((mop survey-id metadata) gth)
-+$  content      ((mop survey-id questions) gth)
+::::::+$  access  (map survey-id [restriction=?(%black %white) =ships])
++$  slug-store   (map ship slugs)
 +$  pending      (set [author slug])
 +$  slugs        (map slug survey-id)
 +$  subscribers  (map survey-id ships)
-+$  results      ((mop survey-id responses) gth)
-::+$  access  (map survey-id [restriction=?(%black %white) =ships])
 ::
-::  Main Types
+::  header - previously metas
 ::
-+$  responses  ((mop response-id response) gth)
-+$  response   [=author =answers]
-+$  survey     [=metadata =questions]
-+$  metadata   $:  =author       =status
-                   =slug         =title
-                   =description  =visibility
-                   =spawn        =updated
-                   =rlimit       =q-count
-               ==
++$  header  ((mop survey-id metadata-1) gth)
++$  metadata-1
+  $:  
+    =author
+    =status
+    =slug
+    =title
+    =description
+    =visibility
+    =spawn
+    =updated
+    =rlimit
+    =size
+  ==
++$  size  [q=(list @ud) s=@ud]
+
+::
+::  stuffing - previously content
+::
++$  stuffing  ((mop survey-id sections) gth)
++$  sections  ((mop section-id section) lth)
++$  section   ((mop question-id segment) lth)
++$  segment
+  $%
+    answer-1
+    question-1
+  ==
++$  section-id  @ud
++$  statement
+  $:
+    x=(list @t)
+    y=(list @t)
+    z=(list @t)
+    display=@tas 
+  ==
++$  question-1
+  $:
+    %question
+    display=@tas
+    accept=@tas
+    required=?
+    min=@ud
+    max=@ud
+    x=(list @t)
+    y=(list @t)
+    z=(list @t)
+    statements=(list statement)
+  ==
++$  submissions  ((mop survey-id responses-1) gth)
++$  responses-1  (map response-id response-1)
++$  response-1   [=submitter =sections]
++$  submitter  ?(ship %anon)
++$  answer-1  [%answer accept=@tas datum]
++$  datum  [a=(list @t) b=(list [@t @t]) c=(list [@t @t @t])]
++$  survey  [=metadata-1 =sections]
 ::
 ::  Basic Types
 ::
@@ -34,99 +78,64 @@
 +$  visibility   ?(%public %private %team %restricted)
 +$  spawn        @da
 +$  updated      @da
-+$  q-count      @ud
 +$  rlimit       @ud
 +$  status       ?(%archived %live)
-::
-::  Answers
-::
-+$  answers     ((mop question-id answer) lth)
-+$  answer      $%  agrid
-                    atext
-                    alist
-                ==
-+$  agrid   [%grid (list [@t @t])]
-+$  atext   [%text @t]
-+$  alist   [%list (list @t)]
-::
-::  Questions
-::
-+$  questions    ((mop question-id question) lth)
 +$  question-id  @ud
-+$  question     [=qtitle =front =back =required x=(list @t) y=(list @t)]
-+$  qtitle      @t
-+$  required     ?
-+$  front     $?
-                %statement::
-                %short::
-                %long::
-                %one::
-                %many::
-                %grid-one
-                %grid-many
-                %linear-discrete::
-                %linear-continuous::
-                %calendar
-              ==
-+$  back     $?  %text
-                 %list
-                 %grid
-             ==
+::
+::  Edits
+::
++$  edit
+  $%
+    [%title =survey-id =title]
+    [%description =survey-id =description]
+    [%slug =survey-id =slug]
+    [%visibility =survey-id =visibility]
+    [%rlimit =survey-id =rlimit]
+    [%addsection =survey-id =section-id]
+    [%delsection =survey-id =section-id]
+    [%addquestion =survey-id =section-id =question-id =question-1]
+    [%delquestion =survey-id =section-id =question-id]
+  ==
 ::
 ::  Actions
 ::
-+$  action   $%  
-               medit
-               ask
-               create
-               qnew
-               qedit
-               qdel
-               dedit
-               submit
-               delete
-::               clone
-             ==
++$  action
+  $%  
+    ask
+    create
+    delete
+    [%editdraft =survey-id =section-id =question-id =answer-1]
+    submit
+  ==
 +$  ask     [%ask =author =slug]
-+$  medit   [%medit =survey-id =title =description =visibility =slug =rlimit]
-+$  qnew    [%qnew =survey-id question]
-+$  qdel    [%qdel =survey-id =question-id]
-+$  qedit   [%qedit =survey-id =question-id =question]
-+$  dedit   [%dedit =survey-id =question-id =answer]
 +$  create  [%create =title =description =visibility =slug =rlimit]
-+$  submit  [%submit =survey-id]
 +$  delete  [%delete =survey-id]
-::                 [%move-q old=question-id new=question-id]
-+$  clone        $:  %clone
-                     =status
-                     =survey-id
-                     =title
-                     =description
-                     =visibility
-                     =slug
-                     =rlimit
-                 ==
++$  submit  [%submit =survey-id]
 ::
 ::  Requests
 ::  
-+$  request  $%  
-               [%slug =slug]
-               [%id =slug =survey-id]
-               [%fail =slug]
-               [%response =survey-id =response-id =answers]
++$  request
+  $%  
+    [%slug =slug]
+    [%id =slug =survey-id]
+    [%fail =slug]
+::               [%response =survey-id =response-id =answers]
              ==
 ::
 ::  Updates
 ::
 +$  update   $% 
-                [%init survey]
-                [%metadata =metadata]
-                [%questions =questions]
-                [%survey survey]
+                [%init metadata=metadata-1 =sections]
+                [%meta metadata=metadata-1]
+                [%secs =sections]
+::                [%questions =questions]
+::                [%survey survey]
              ==
-+$  frontend  $%
-                [%metas =metas]
-                [%active =survey-id survey =answers]
-                [%responses =responses]
-              ==
++$  frontend  
+  $%
+    [%header =header]
+    [%active =survey-id metadata=metadata-1 =sections draft=sections]
+::                [%responses =responses]
+  ==
++$  cmd  json
 --

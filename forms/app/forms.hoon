@@ -1,22 +1,10 @@
-/-  *forms
-/+  default-agent, dbug, fl=forms
+/-  *forms-states, *forms
+/+  default-agent, dbug, upgrade, fl=forms
 |%
-+$  versioned-state
-  $%  state-0
-  ==
-+$  state-0
-  $:  %0
-    =metas
-    =content
-    =slugs
-    =pending
-    =subscribers
-    =results
-  ==
 +$  card  card:agent:gall
 --
 %-  agent:dbug
-=|  state-0
+=|  state-1
 =*  state  -
 ^-  agent:gall
 |_  =bowl:gall
@@ -25,7 +13,7 @@
 ::
 ++  on-init
   ^-  (quip card _this)
-  `this
+  `this(slug-store (~(put by slug-store) our.bowl *slugs))
 ::
 ++  on-save
   ^-  vase
@@ -36,9 +24,47 @@
   ^-  (quip card _this)
   =/  old  !<(versioned-state old-state)
   ?-  -.old
-    %0  `this(state old)
+    %1  `this(state old)
+    %0  `this(state (convert-0-to-1:upgrade old our.bowl))
   ==
 ::
+++  on-watch 
+  |=  =path
+  ^-  (quip card _this)
+  ?+  path  (on-watch:def path)
+      [%header %all ~]
+    :_  this
+    ~[give+fact+`forms-cmd+!>(`cmd`(frond:enjs:format ['flag' s+'refresh']))]
+    ::
+      [%survey @ ~]
+    =/  id=survey-id   (slav %ud i.t.path)
+    =+  m=(got:header-orm:fl header id)
+    ?>  =(%public visibility.m)
+    =+  s=(got:stuffing-orm:fl stuffing id)
+    :_  this(subscribers (add-subs:fl subscribers id src.bowl))
+    :~  :*
+      %give  %fact   ~
+      %forms-update  !>  `update`init+[m s]
+    ==  ==
+  ==
+::
+++  on-leave  on-leave:def
+++  on-peek
+  |=  =path
+  ^-  (unit (unit cage))
+  ?+    path  (on-peek:def path)
+      [%x %header ~]
+    ``forms-json+!>(`frontend`header+header)
+      [%x %active @ @ ~]
+    =+  g=(~(got by slug-store) (slav %p i.t.t.path))
+    =+  id=(~(got by g) i.t.t.t.path)
+    =+  m=(got:header-orm:fl header id)
+    =+  s=(got:stuffing-orm:fl stuffing id)
+    =+  sb=(got:submissions-orm:fl submissions id)
+    =+  d=sections:(~(got by sb) %draft)
+    ``forms-json+!>(`frontend`active+[id m s d])
+
+  ==
 ++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
@@ -53,6 +79,12 @@
     =^  cards  state
       (handle-request !<(request vase))
     [cards this]
+    ::
+      %forms-edit
+    =^  cards  state
+      (handle-edit !<(edit vase))
+    [cards this]
+
   ==
   ++  handle-action
     |=  act=action
@@ -60,74 +92,29 @@
     ?>  =(src our):bowl
     ?-  -.act
         %create
-      ~|  'slug already exists'
-      ?>  =(~ (~(get by slugs) slug.act))
-      =+  id=(make-survey-id:fl now.bowl our.bowl)
-      =/  this-metadata=metadata
-        (create-metas:fl act our.bowl now.bowl)
-      =/  new-slugs
-        ^+  slugs
-        (~(put by slugs) slug.act id)
-      =/  new-metas  
-        ^+  metas
-        (put:m-orm:fl metas id this-metadata)
-      :-  ~
-      %=  state
-        content      (put:c-orm:fl content id *questions)
-        metas        (put:m-orm:fl metas id this-metadata)
-        slugs        (~(put by slugs) slug.act id)
-        subscribers  (~(put in subscribers) id *ships)
-        results      ^+  results
-        =/  n=responses
-          (put:re-orm:fl *responses %draft [our.bowl *answers])
-        (put:r-orm:fl results id n)
-      ==
-      ::
-        %medit
-      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
-      =.  updated.this-metadata
-        now.bowl
-      =.  title.this-metadata
-        title.act
-      =.  description.this-metadata
-        description.act
-      =+  dead-slugs=(~(del by slugs) slug.this-metadata)
-      =.  slug.this-metadata
-        slug.act
-      =+  new-slugs=(~(put by dead-slugs) slug.act survey-id.act)
-      =.  visibility.this-metadata
-        visibility.act
-      =.  rlimit.this-metadata
-        rlimit.act
-      =/  this-u-questions=(unit questions)
-        (get:c-orm:fl content survey-id.act)
-      =/  this-questions=questions
-        ?~  this-u-questions
-          ~
-        (need this-u-questions)
-      ?.  =(%private visibility.this-metadata)
-        :_  
-        %=  state
-          metas  (put:m-orm:fl metas survey-id.act this-metadata)
-          slugs  new-slugs
-        ==
-        :~  :*
-          %give  %fact  [/survey/(scot %ud survey-id.act) ~]
-          %forms-update  !>  `update`metadata+this-metadata
-        ==  ==
-      =/  subs
-        ~(tap in (~(got by subscribers) survey-id.act))
-      :_  
-      %=  state
-        metas        (put:m-orm:fl metas survey-id.act this-metadata)
-        slugs        new-slugs
-        subscribers  (~(del by subscribers) survey-id.act)
-      ==
-      ?:  =(0 (lent subs))
-        ~
-      %+  turn
-        subs
-      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
+      =+  id=(make-survey-id:fl now.bowl our.bowl) 
+      =,  enjs:format
+      =+  sl=(~(got by slug-store) our.bowl)
+      ?>  =(~ (~(get by sl) slug.act))
+      =+  m=(create-metadata-1:fl act our.bowl now.bowl)
+      =+  g=(~(put by sl) slug.act id)
+      =+  gg=(~(put by slug-store) our.bowl g)
+      =+  h=(put:header-orm:fl header id m)
+      =+  sc=(put:section-orm:fl *section 1 *question-1)
+      =+  ss=(put:sections-orm:fl *sections 1 *section)
+      =+  st=(put:stuffing-orm:fl stuffing id ss)
+      =+  sb=(~(put by subscribers) id *ships)
+      =+  rc=(put:section-orm:fl *section 1 *answer-1)
+      =+  rp=(put:sections-orm:fl *sections 1 *section)
+      =+  rs=(~(put by *responses-1) %draft [our.bowl rp])
+      =+  sm=(put:submissions-orm:fl submissions id rs)
+      :-  
+      :~  :*
+        %give  %fact  ~[/header/all]
+        %forms-cmd  !>
+        `cmd`(pairs ~[['flag' s+'ask'] ['id' s+(scot %ud id)]])
+      ==  ==
+      state(header h, slug-store gg, stuffing st, subscribers sb, submissions sm)
         ::
         %ask
       :_  state(pending (~(put in pending) [author.act slug.act]))
@@ -137,311 +124,352 @@
         %poke   %forms-request  !>  slug+slug.act
       ==  ==
         ::
-        %submit
-      =+  this-response=(got:r-orm:fl results survey-id.act)
-      =/  draft=answers
-        answers:(got:re-orm:fl this-response %draft)
-      =+  this-questions=(got:c-orm:fl content survey-id.act)
-      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
-      ?>  (check-answers:fl q-count.this-metadata this-questions draft)
-      =+  survey-author=author:(got:m-orm:fl metas survey-id.act)
-      =+  rid=(make-response-id:fl now.bowl our.bowl survey-id.act)
-      =+  hollow=+:(del:re-orm:fl this-response %draft)
-      =+  new-response=(put:re-orm:fl hollow rid [our.bowl draft])
-      =+  new-draft=(put:re-orm:fl new-response %draft [our.bowl *answers])
-      =+  res=[survey-id.act rid draft]
-      :_  state(results (put:r-orm:fl results survey-id.act new-draft))
-      :~  :*
-        %pass   /submit
-        %agent  [survey-author %forms]
-        %poke   %forms-request  !>  response+res
-      ==  ==
-        ::
-        %qnew
-      =+  this-metadata=`metadata`(need (get:m-orm:fl metas survey-id.act))
-      ?>  =(our.bowl author.this-metadata)
-      =+  this-questions=`questions`(need (get:c-orm:fl content survey-id.act))
-      =+  inc=+(q-count.this-metadata)
-      =+  new-questions=`questions`(put:q-orm:fl this-questions inc +7:act)
-      =.  q-count.this-metadata
-        `q-count`inc
-      =.  updated.this-metadata
-        now.bowl
-      :_  %=  state 
-            content  (put:c-orm:fl content survey-id.act new-questions)
-            metas    (put:m-orm:fl metas survey-id.act this-metadata)
-          ==
-      :~  :*
-        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
-        %forms-update  !>  `update`questions+this-questions
-      ==  ==
-        ::
-        %qedit
-      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
-      ?>  =(our.bowl author.this-metadata)
-      ?>  (lte question-id.act q-count.this-metadata)
-      =+  qs=(need (get:c-orm:fl content survey-id.act))
-      =+  new-qs=(put:q-orm:fl qs question-id.act question.act)
-      :_  %=  state
-            content  (put:c-orm:fl content survey-id.act new-qs)
-          ==
-      :~  :*
-        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
-        %forms-update  !>  `update`questions+new-qs
-      ==  ==
-        ::
-        %qdel
-      =+  this-metadata=(need (get:m-orm:fl metas survey-id.act))
-      ?>  =(our.bowl author.this-metadata)
-      ?>  (lte question-id.act q-count.this-metadata)
-      =+  this-questions=(need (get:c-orm:fl content survey-id.act))
-      =+  hollow=+:(del:q-orm:fl this-questions question-id.act)
-      =/  new-questions=questions
-      %^    move-q-up-after-delete:fl 
-          hollow 
-        +(question-id.act) 
-      q-count.this-metadata
-      =.  q-count.this-metadata
-        (dec q-count.this-metadata)
-      =.  updated.this-metadata
-        now.bowl
-      :_  %=  state
-            content  (put:c-orm:fl content survey-id.act new-questions)
-            metas    (put:m-orm:fl metas survey-id.act this-metadata)
-          ==
-      :~  :*
-        %give  %fact  [/survey/(scot %ud survey-id.act) ~]
-        %forms-update  !>  `update`survey+[this-metadata new-questions]
-      ==  ==
-        ::
-        %dedit
-      =+  this-ress=(got:r-orm:fl results survey-id.act)
-      =+  resp=(got:re-orm:fl this-ress %draft)
-      =+  this-ans=(put:a-orm:fl answers.resp question-id.act answer.act)
-      =+  new-ress=(put:re-orm:fl this-ress %draft [author.resp this-ans])
-      :-  ~  
-      %=  state
-        results  ^+  results
-        (put:r-orm:fl results survey-id.act new-ress)
-      ==  
-        ::
         %delete
-      =+  this-metadata=(got:m-orm:fl metas survey-id.act)
-      =+  new-results=+:(del:r-orm:fl results survey-id.act)
-      =+  new-metas=+:(del:m-orm:fl metas survey-id.act)
-      =+  new-content=+:(del:c-orm:fl content survey-id.act)
-      =+  new-slugs=(~(del by slugs) slug.this-metadata)
-      ?.  =(our.bowl author.this-metadata)
-        :_  %=  state
-              metas    new-metas
-              content  new-content
-              slugs    new-slugs
-              results  new-results
-            ==        
+      =+  m=(got:header-orm:fl header survey-id.act)
+      =+  h=+:(del:header-orm:fl header survey-id.act)
+      =+  s=+:(del:stuffing-orm:fl stuffing survey-id.act)
+      =+  sb=+:(del:submissions-orm:fl submissions survey-id.act)
+      =+  sl=(~(got by slug-store) our.bowl)
+      =+  g=(~(del by sl) slug.m)
+      =+  gg=(~(put by slug-store) our.bowl g)
+      ?.  =(our.bowl author.m)
+        :_  state(header h, stuffing s, submissions sb, slug-store gg)
         :~  :*
-          %pass
-          /updates/(scot %ud survey-id.act)
-          %agent
-          [author.this-metadata %forms]
+          %pass   /updates/(scot %ud survey-id.act)
+          %agent  [author.m %forms]
           %leave  ~
         ==  ==
-      =/  subs
-        =+  unit-sub=(~(get by subscribers) survey-id.act)
-        ?~  unit-sub
-          ~
-        ~(tap in (need unit-sub))
-        
-      :_  %=  state
-            metas        new-metas
-            content      new-content
-            slugs        new-slugs
-            subscribers  (~(del by subscribers) survey-id.act)
-            results      new-results
-          ==
-      ?:  =(0 (lent subs))
-        ~
-      %+  turn
-        subs
-      |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a])
+        =+  sr=(~(get by subscribers) survey-id.act)
+        =+  sd=(~(del by subscribers) survey-id.act)
+        ?~  sr
+          `state(header h, stuffing s, submissions sb, slug-store gg)
+        =+  sn=~(tap in (need sr))
+        ?~  sn
+          `state(header h, stuffing s, submissions sb, slug-store gg, subscribers sd)
+        :_  state(header h, stuffing s, submissions sb, slug-store gg, subscribers sd)
+        (turn sn |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.act)] `a]))
+        ::
+        %editdraft
+      =+  sb=(got:submissions-orm:fl submissions survey-id.act)
+      =+  sd=(~(got by sb) %draft)
+      =+  sc=(get:sections-orm:fl sections.sd section-id.act)
+      =+  x=?~(sc *section (need sc))
+      =+  a=(put:section-orm:fl x question-id.act answer-1.act)
+      =.  sections.sd
+        (put:sections-orm:fl sections.sd section-id.act a)
+      =+  se=(~(put by sb) %draft sd)
+      =+  sn=(put:submissions-orm:fl submissions survey-id.act se)
+      `state(submissions sn)
+        %submit
+      =+  st=(got:stuffing-orm:fl stuffing survey-id.act)
+      =+  sb=(got:submissions-orm:fl submissions survey-id.act)
+      =+  rs=(~(got by sb) %draft)
+      ?:  =(~ (check-response:fl st +.rs))
+        `state
+      `state
     ==
+    ++  handle-edit
+    |=  ed=edit
+    ^-  (quip card _state)
+    ?>  =(src our):bowl
+    =+  m=(got:header-orm:fl header survey-id.ed)
+    =.  updated.m
+      now.bowl
+    ?-  -.ed
+        %addsection
+      =+  so=(got:stuffing-orm:fl stuffing survey-id.ed)
+      =+  sc=(put:sections-orm:fl so section-id.ed *section)
+      =+  sn=(put:stuffing-orm:fl stuffing survey-id.ed sc)
+      =.  s.size.m
+        +(s.size.m)
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h, stuffing sn)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`secs+sc
+      ==  ==
+        ::
+        %delsection
+      =+  so=(got:stuffing-orm:fl stuffing survey-id.ed)
+      =+  sid=section-id.ed
+      ?<  (gth sid s.size.m)  
+      =.  q.size.m
+        (oust [(dec sid) 1] q.size.m)
+      ?:  =(sid s.size.m)
+        =+  st=+:(del:sections-orm:fl so sid)
+        =.  s.size.m
+          (dec sid)
+        =+  sn=(put:stuffing-orm:fl stuffing survey-id.ed st)
+        =+  h=(put:header-orm:fl header survey-id.ed m)
+        :_  state(stuffing sn, header h)
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`meta+m
+        ==  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`secs+st
+        ==  ==
+      |-
+      ?.  (gte sid s.size.m)
+        =+  st=(got:sections-orm:fl so +(sid))
+        =+  sn=(put:sections-orm:fl so sid st) 
+        $(so sn, sid +(sid))
+      =+  st=+:(del:sections-orm:fl so sid)
+      =.  s.size.m
+        (dec sid)
+      =+  sn=(put:stuffing-orm:fl stuffing survey-id.ed st)
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(stuffing sn, header h)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`secs+st
+      ==  ==
+        ::
+        %delquestion
+      =+  so=(got:stuffing-orm:fl stuffing survey-id.ed)
+      =+  sc=(got:sections-orm:fl so section-id.ed)
+      =+  n=(lent (tap:section-orm:fl sc))
+      =.  q.size.m
+        (snap q.size.m (dec section-id.ed) (dec (snag (dec section-id.ed) q.size.m)))
+      ?:  =(n question-id.ed)
+        =+  sn=+:(del:section-orm:fl sc question-id.ed)
+        =+  ss=(put:sections-orm:fl so section-id.ed sn)
+        =+  st=(put:stuffing-orm:fl stuffing survey-id.ed ss)
+        =+  h=(put:header-orm:fl header survey-id.ed m)
+        :_  state(header h, stuffing st)
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`meta+m
+        ==  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`secs+ss
+        ==  ==
+      =+  qid=question-id.ed
+      |-
+      ?.  =(qid n)
+        =+  q=(got:section-orm:fl sc +(qid))
+        =+  sn=(put:section-orm:fl sc qid q)
+        $(sc sn, qid +(qid))
+      =+  sn=+:(del:section-orm:fl sc qid)
+      =+  ss=(put:sections-orm:fl so section-id.ed sn)
+      =+  st=(put:stuffing-orm:fl stuffing survey-id.ed ss)
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h, stuffing st)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`secs+ss
+      ==  ==
+        ::
+        %addquestion
+      =+  s=(got:stuffing-orm:fl stuffing survey-id.ed)
+      =+  sc=(got:sections-orm:fl s section-id.ed)
+      =+  q=(get:section-orm:fl sc question-id.ed)
+      =+  qn=(put:section-orm:fl sc question-id.ed question-1.ed)
+      =+  sn=(put:sections-orm:fl s section-id.ed qn)
+      =+  st=(put:stuffing-orm:fl stuffing survey-id.ed sn)
+      ?~  q
+        =.  q.size.m
+          %^    snap 
+              q.size.m
+            (dec section-id.ed)
+          +((lent (tap:section-orm:fl sc)))
+        =+  h=(put:header-orm:fl header survey-id.ed m)
+        :_  state(header h, stuffing st)
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`meta+m
+        ==  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`secs+sn
+        ==  ==
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h, stuffing st)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`secs+sn
+      ==  ==
+        ::
+        %title
+      =.  title.m
+        title.ed
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  ==
+        ::
+        %description
+      =.  description.m
+        description.ed
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  ==
+        ::
+        %rlimit
+      =.  rlimit.m
+        rlimit.ed
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      :_  state(header h)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  ==
+        ::
+        %slug
+      =+  sl=(~(got by slug-store) our.bowl)
+      =+  e=(~(del by sl) slug.m)
+      =.  slug.m
+        slug.ed
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      =+  g=(~(put by e) slug.ed survey-id.ed)
+      =+  gg=(~(put by slug-store) our.bowl g)
+      :_  state(header h, slug-store gg)
+      :~  :*
+        %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+        %forms-update  !>  `update`meta+m
+      ==  ==
+        ::
+        %visibility
+      =.  visibility.m
+        visibility.ed
+      =+  h=(put:header-orm:fl header survey-id.ed m)
+      ?.  =(%private visibility.ed)
+        :_  state(header h)
+        :~  :*
+          %give  %fact  [/survey/(scot %ud survey-id.ed) ~]
+          %forms-update  !>  `update`meta+m
+        ==  ==
+      =+  s=~(tap in (~(got by subscribers) survey-id.ed))
+      =+  ns=(~(put by subscribers) survey-id.ed *ships)
+      :_  state(header h, subscribers ns)
+      ?:  =(0 (lent s))  ~
+      (turn s |=(a=@p [%give %kick ~[/survey/(scot %ud survey-id.ed)] `a]))
+    ==
+    ::
   ++  handle-request
     |=  req=request
     ^-  (quip card _state)
     ?-  -.req
         %slug
-      =+  id=(~(get by slugs) slug.req)
+      =+  g=(~(got by slug-store) our.bowl)
+      =+  id=(~(get by g) slug.req)
       :_  state
       :~  :*
         %pass   /slug
         %agent  [src.bowl %forms]
         %poke   %forms-request  !>
-        ?~  id  fail+slug.req  id+[slug.req (need id)]
+        ?~  id  
+          fail+slug.req  
+          ?:  =(%public visibility:(got:header-orm:fl header (need id)))
+            id+[slug.req (need id)]
+          fail+slug.req  
         ==  ==
       ::
         %fail
       %-  (slog leaf+"forms doesn't exist!" ~)
-      `state(pending (~(del in pending) [src.bowl slug.req]))
+      :-
+      :~  :*
+        %give  %fact  ~[/header/all]
+        %forms-cmd  !>
+        `cmd`(pairs:enjs:format ~[['flag' s+'requested'] ['status' s+'fail']])
+      ==  ==
+      state(pending (~(del in pending) [src.bowl slug.req]))
       ::
         %id
-      %-  (slog leaf+"subscribing to survey" ~)
-      :_  state(pending (~(del in pending) [src.bowl slug.req]))
+      =+  p=(~(del in pending) [src.bowl slug.req])
+      =+  g=(~(get by slug-store) src.bowl)
+      =+  sl=?~(g *slugs (need g))
+      =+  s=(~(put by sl) slug.req survey-id.req)
+      =+  gg=(~(put by slug-store) src.bowl s)
+      :_  state(pending p, slug-store gg)
       :~  :*
+        %give  %fact  ~[/header/all]
+        %forms-cmd  !>
+        =,  enjs:format
+        ^-  cmd
+        (pairs ~[['flag' s+'requested'] ['status' s+(scot %ud survey-id.req)]])
+      ==  :*
         %pass   /updates/(scot %ud survey-id.req)
         %agent  [src.bowl %forms]
         %watch  /survey/(scot %ud survey-id.req)
       ==  ==
-        %response
-        ~|  'invalid response'
-        =+  this-metas=(got:m-orm:fl metas survey-id.req)
-        ?>  =(our.bowl author.this-metas)
-        =/  qs=questions  (got:c-orm:fl content survey-id.req)
-        ?>  (check-answers:fl q-count.this-metas qs answers.req)
-        =+  this-response=(got:r-orm:fl results survey-id.req)
-        =/  new-response
-          (put:re-orm:fl this-response response-id.req [src.bowl answers.req])
-        `state(results (put:r-orm:fl results survey-id.req new-response))
     ==
-  --  
-++  on-watch
-  |=  =path
-  ^-  (quip card _this)
-  ?+  path  (on-watch:def path)
-      [%survey @ ~]
-    =/  id=survey-id   (slav %ud i.t.path)
-    =+  this-metadata=(need (get:m-orm:fl metas id))
-    ?>  =(%public visibility.this-metadata)
-    =+  x=(get:c-orm:fl content id)
-    =/  this-questions=questions
-    ?~  x
-      *questions
-    (need x)
-    :_  this(subscribers (add-subs:fl subscribers id src.bowl))
-    :~  :*
-      %give  %fact   ~
-      %forms-update  !>  `update`init+[this-metadata this-questions]
-    ==  ==
-  ==
-++  on-leave  on-leave:def
-++  on-peek
-  |=  =path
-  ^-  (unit (unit cage))
-  ?+    path  (on-peek:def path)
-      [%x %metas ~]
-    :^  ~  ~  %forms-json
-    !>  ^-  frontend
-    metas+metas
-    ::
-      [%x %active @ ~]
-    :^  ~  ~  %forms-json
-    !>  ^-  frontend
-    =+  id=`survey-id`(slav %ud i.t.t.path)
-    :-  %active
-    :+  id
-    ^-  survey  
-    :-  metadata=`metadata`(need (get:m-orm:fl metas id))
-    questions=`questions`(need (get:c-orm:fl content id))
-    ^-  answers
-    answers:(got:re-orm:fl (got:r-orm:fl results id) %draft)
-      [%x %responses @ ~]
-    =+  id=`survey-id`(slav %ud i.t.t.path)
-    :^  ~  ~  %forms-json
-    !>  ^-  frontend
-    =+  resp=(got:r-orm:fl results id)
-    responses+resp
-  ==
+  --
 ++  on-agent
   |=  [=wire =sign:agent:gall]
   ^-  (quip card _this)
   ?+  wire  (on-agent:def wire sign)
-    [%slug ~]
+      [%slug ~]
     ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
     ?~  p.sign
       `this
-    ::
-      %-  %-  slog  ^-  tang  (need p.sign)  `this
-    [%submit ~]
-    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
-    ?~  p.sign
-      `this
-      %-  %-  slog  ^-  tang  (need p.sign)  `this
-    ::
-    [%leave ~]
-    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
-    ?~  p.sign
-      `this
-      %-  %-  slog  ^-  tang  (need p.sign)  `this
-    ::
-    [%edit ~]
-    ?.  ?=(%poke-ack -.sign)  (on-agent:def wire sign)
-    ?~  p.sign
-      `this
-      %-  %-  slog  ^-  tang  (need p.sign)  `this
-    ::
-    [%updates @ ~]
+    %-  %-  slog  ^-  tang  (need p.sign)  `this
+      [%updates @ ~]
     ?+  -.sign  (on-agent:def wire sign)
       %watch-ack
-      ~&  >>>  'watch aack'
       ?~  p.sign  (on-agent:def wire sign)
       %-  %-  slog  ^-  tang  (need p.sign)  `this
       ::
       %kick
-      ~&  >>>  'kicked'
       =+  id=(slav %ud i.t.wire)
-      =+  this-metadata=(need (get:m-orm:fl metas id))
-      =.  status.this-metadata  %archived
-      =+  new-metas=(put:m-orm:fl metas id this-metadata)
-      `this(metas new-metas)
+      =+  m=(got:header-orm:fl header id)
+      =.  status.m  %archived
+      =+  h=(put:header-orm:fl header id m)
+      `this(header h)
       ::
       %fact
-      ~&  >>>  'fax'
       ?+  p.cage.sign  (on-agent:def wire sign)
         %forms-update
         =/  id=survey-id  (slav %ud i.t.wire)
         =+  upd=!<(update q.cage.sign)
         ?-  -.upd
-            %metadata
-          :-  ~
-          %=  this
-            metas  ^+  metas
-            (put:m-orm:fl metas id metadata.upd)
-          ==
+            %meta
+            =+  h=(put:header-orm:fl header id metadata.upd)
+            `this(header h)
           ::
-           %questions
-          :-  ~
-          %=  this
-            content  ^+  content
-            (put:c-orm:fl content id questions.upd)
-          ==
-          ::
-           %survey
-          :-  ~
-          %=  this
-            metas  
-              ^+  metas
-            (put:m-orm:fl metas id metadata.upd)
-            content
-              ^+  content
-            (put:c-orm:fl content id questions.upd)
-          ==
+            %secs
+            =+  s=(put:stuffing-orm:fl stuffing id sections.upd)
+            `this(stuffing s)
           ::
             %init
-          =+  this-responses=(get:r-orm:fl results id)
-          :-  ~
-          %=  this
-            metas  ^+  metas
-            (put:m-orm:fl metas id metadata.upd)
-            content  ^+  content
-            (put:c-orm:fl content id questions.upd)
-            results  ^+  results
-            ?~  this-responses
-              =/  n=responses
-              (put:re-orm:fl *responses %draft [our.bowl *answers])
-              (put:r-orm:fl results id n)
-            =/  m=responses
-            (put:re-orm:fl (need this-responses) %draft [our.bowl *answers])
-            (put:r-orm:fl results id m)
-          ==
-
+          =,  enjs:format
+          =+  h=(put:header-orm:fl header id metadata.upd)
+          =+  s=(put:stuffing-orm:fl stuffing id sections.upd)
+          =+  rc=(put:section-orm:fl *section 1 *answer-1)
+          =+  rp=(put:sections-orm:fl *sections 1 *section)
+          =+  rs=(~(put by *responses-1) %draft [our.bowl rp])
+          =+  sm=(put:submissions-orm:fl submissions id rs)
+          :_  this(header h, stuffing s, submissions sm)
+          :~  :*
+            %give  %fact  ~[/header/all]  %forms-cmd  
+            !>
+            ^-  cmd
+            %-  pairs 
+            :~
+              ['flag' s+'requested']
+              ['status' s+'summon']
+              :-  'addr' 
+              :-  %s
+              %-  crip
+              :(weld (trip (scot %p author.metadata.upd)) "/" (trip slug.metadata.upd))
+            ==
+          ==  ==
         ==
       ==
     ==

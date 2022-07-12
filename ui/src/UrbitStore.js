@@ -6,102 +6,194 @@ const urbit = new Urbit("");
 
 // stores
 export const metas = writable(null);
-export const active = writable("req");
+export const active = writable(null);
 export const responses = writable(null);
+export const isAdmin = writable(false);
+export const isCreate = writable(null);
+export const requesting = writable(false);
+export const formSettingsTab = writable("questions");
+export const submitting = writable(false);
 
-// variables
-export const frontType = [
-      ["text", "statement"], 
-      ["text", "short"], 
-      ["text", "long"], 
-      ["text", "one"],
-      ["list", "many"],
-//      ["grid",  "grid-one"], 
-//      ["grid",  "grid-many"],
-      ["text", "linear-discrete"],
-      ["text", "linear-continuous"],
-//      ["text", "calendar"]
-  ]
+// new
 
-// store modifiers
+export function initMetas(ship) {
+  urbit.ship = ship
 
-export function updateMetas(ship, path) {
-  scryUrbit(ship, path).then( res => metas.set(res))
+  urbit.subscribe({
+    app: "forms",
+    path: "/header/all",
+    event: updateInfo,
+    quit: reSub,
+    err: reSub
+  })
 }
 
-export function setActive(ship, id) {
-  const s = "/active/" + id
-  const r = "/responses/" + id
-  scryUrbit(ship, s).then( res => active.set(res))
-  scryUrbit(ship, r).then( res => responses.set(res)) 
-} 
-
-// metadata pokes
-export function editMetadata(data) {
-  urbit.poke({
-    app: "forms",
-    mark: "forms-action",
-    json: {"medit": data},
-    onSuccess: ()=>(updateMetas(urbit.ship, "/metas")),
-    onError: ()=>(console.log("error handling"))
-})}
-
-// survey pokes
-
-export function deleteSurvey(data) {
+export function requestForm(ship, data) {
+  requesting.set(true)
+  let arr = data.split("/")
   urbit.poke({
       app: "forms",
       mark: "forms-action",
-      json: {"delete": data},
-      onSuccess: ()=>(afterSurveyDelete()),
+      json: {"ask":{"author": arr[0],"slug":arr[1]}},
+      onSuccess: ()=>(console.log("waiting...")),
       onError: ()=>(console.log("error handling"))
   })
 }
 
-function afterSurveyDelete() {
-  active.set("req")
-  updateMetas(window.ship, "/metas")
+export function getForm(ship, addr) {
+  urbit.ship = ship
+  scryUrbit("/active/" + addr).then(res => active.set(res))
 }
 
-// question pokes
+// internal only
+function updateInfo(e) {
+  if (e.flag === "refresh") {
+    refreshMetas()
+  }
+  if (e.flag === "created") {
+    console.log("created todo:ln 56 store | id: " + e.id)
+  }
 
-export function editQuestion(data) {
+  if (e.flag === "requested") {
+    requesting.set(false)
+  
+    if (e.status === "fail") {
+      console.log("form doesn't exist") 
+    } else if (e.status === "summon") {
+      window.location.href = "/apps/forms/" + e.addr;
+      console.log("summon the form!")
+      console.log("addr: " + e.addr)
+    }
+  }
+}
+
+function reSub() {
+  console.log("unsubbed")
+}
+
+function refreshMetas() {
+  scryUrbit("/header").then(res => {
+    metas.set(res)
+    console.log("displaying latest information")
+  })
+}
+
+function scryUrbit(path) {
+  const msg = urbit.scry({
+    app: "forms",
+    path: path,
+  })
+  return msg
+}
+
+export function createSurvey(data) {
+    urbit.poke({
+      app: "forms",
+      mark: "forms-action",
+      json: {"create": data},
+      onSuccess: ()=>(
+        window.location.href = "/apps/forms/~" + urbit.ship + "/" + data.slug
+      ),
+      onError: ()=>(console.log("createSurvey: error"))
+    })
+}
+
+/* Edit Metadata */
+export function editTitle(data) {
   urbit.poke({
     app: "forms",
-    mark: "forms-action",
-    json: {"qedit": data},
-    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    mark: "forms-edit",
+    json: {"title": data},
+    onSuccess: ()=>(console.log("title edited")),
     onError: ()=>(console.log("error handling"))
 })}
 
-export function newQuestion(data) {
+export function editDesc(data) {
   urbit.poke({
     app: "forms",
-    mark: "forms-action",
-    json: {"qnew": data},
-    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    mark: "forms-edit",
+    json: {"description": data},
+    onSuccess: ()=>(console.log("description edited")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function editSlug(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-edit",
+    json: {"slug": data},
+    onSuccess: ()=>(console.log("slug edited")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function editVis(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-edit",
+    json: {"visibility": data},
+    onSuccess: ()=>(console.log("visibility edited")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function editResLimit(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-edit",
+    json: {"rlimit": data},
+    onSuccess: ()=>(console.log("response limit edited")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function addSection(data) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-edit",
+    json: {"addsection": data},
+    onSuccess: ()=>(console.log("section added")),
+    onError: ()=>(console.log("error handling"))
+})}
+
+export function delSection(data, addr) {
+  urbit.poke({
+    app: "forms",
+    mark: "forms-edit",
+    json: {"delsection": data},
+    onSuccess: ()=>(getForm(urbit.ship, addr)),
     onError: ()=>(console.log("error handling"))
   })
 }
 
-export function delQuestion(data) {
+export function deleteForm(data) {
+  urbit.poke({
+      app: "forms",
+      mark: "forms-action",
+      json: {"delete": data},
+      onSuccess: ()=>(
+        window.location.href = "/apps/forms/"
+      ),
+      onError: ()=>(console.log("deleteSurvey: error"))
+  })
+}
+
+export function addQuestion(data) {
   urbit.poke({
     app: "forms",
-    mark: "forms-action",
-    json: {qdel: data},
-    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    mark: "forms-edit",
+    json: {"addquestion": data},
+    onSuccess: ()=>(console.log("question inserted")),
     onError: ()=>(console.log("error handling"))
   })
 }
 
-// answer pokes
-
-export function editDraft(data) {
+export function delQuestion(addr, data) {
   urbit.poke({
     app: "forms",
-    mark: "forms-action",
-    json: {dedit: data},
-    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    mark: "forms-edit",
+    json: {"delquestion": data},
+    onSuccess: ()=>{
+      console.log("question removed")
+      getForm(urbit.ship, addr)
+    },
     onError: ()=>(console.log("error handling"))
   })
 }
@@ -111,43 +203,21 @@ export function submitResponse(data) {
     app: "forms",
     mark: "forms-action",
     json: {submit: data},
-    onSuccess: ()=>(setActive(urbit.ship, data.surveyid)),
+    onSuccess: ()=>{
+      //window.location.href = "/apps/forms/"
+      submitting.set(false)
+    },
     onError: ()=>(console.log("error handling"))
   })
 }
 
-// top panel related
-
-export function requestSurvey(ship, data) {
-  let arr = data.split("/")
+// answer pokes
+export function editDraft(data) {
   urbit.poke({
-      app: "forms",
-      mark: "forms-action",
-      json: {"ask":{"author": arr[0],"slug":arr[1]}},
-      onSuccess: ()=>(updateMetas(ship, "/metas")),
-      onError: ()=>(console.log("error handling"))
-  })
-}
-
-export function createSurvey(ship, data) {
-  if (data.title && data.description && data.slug) {
-    urbit.poke({
-      app: "forms",
-      mark: "forms-action",
-      json: {"create": data},
-      onSuccess: ()=>(updateMetas(ship, "/metas")),
-      onError: ()=>(console.log("error handling"))
-    })
-  } else {console.log("details cannot be empty!")}
-}
-
-// internal only
-function scryUrbit(ship, path) {
-  urbit.ship = ship
-  const msg = urbit.scry({
     app: "forms",
-    path: path,
+    mark: "forms-action",
+    json: {"editdraft": data},
+    onSuccess: ()=>(console.log("draft edited")),
+    onError: ()=>(console.log("error handling"))
   })
-  return msg
 }
-

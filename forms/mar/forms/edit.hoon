@@ -1,14 +1,14 @@
 /-  *forms
 /+  *dejs
-|_  act=action
+|_  act=edit
 ++  grow
   |%
   ++  noun  act
   --
 ++  grab
   |%
-  ++  noun  action
-  ++  json  dejs-action
+  ++  noun  edit
+  ++  json  dejs-edit
   --
 ++  grad  %noun
 --
