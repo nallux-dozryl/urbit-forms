@@ -78,6 +78,7 @@
      if (type === "cal") {
         data["display"] = "cal-input"
         data["x"] = ['date']
+        data["accept"] = "grid"
         addQuestion(data)
         delete data.id
         delete data.sid

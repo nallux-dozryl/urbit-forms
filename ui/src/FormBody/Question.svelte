@@ -34,12 +34,23 @@
   {/each}
   {#each inputs as c}
     {#if $active[1][n].sec[i].display === c.display}
+      {#if $active[1][n].sec[i].required}
+        <div class="req">Required</div>
+      {/if}
       <svelte:component this={c.component} {n} {i} />
     {/if}
   {/each}
 </div>
 
 <style>
+
+  .req {
+    font-size: .7em;
+    color: #666;
+    margin: 0 0 .6em 1em;
+    font-weight: 600;
+  }
+
 
   .section-number {
     text-align: center;

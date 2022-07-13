@@ -8,17 +8,20 @@
 
   if ($active[2][n].sec[i].a.length > 0) {
     selected = $active[2][n].sec[i].a  
-    console.log(selected)
   }
 
   function handleClick() {
+      let accept = "text"
+      if ($active[1][n].sec[i].y.length > 1) {
+        accept = "list"
+      }
       $active[2][n].sec[i].a = selected
       const data = {
         id: $active[0].id,
         sid: n + 1,
         qid: $active[1][n].sec[i].qid,
         head: "answer",
-        accept: "text",
+        accept: accept,
         a: $active[2][n].sec[i].a,
         b:[],
         c:[]
@@ -68,8 +71,6 @@
   }
 
   .label {
-    flex: 2;
-    text-align: right;
     font-size: .8em;
     font-weight: 500;
     color: #666;

@@ -1,0 +1,10 @@
+:~
+  title+'Forms'
+  info+'Publish and Respond to Forms'
+  color+0xaa.c5e2
+  version+[0 0 3]
+  website+'https://gerhana.network'
+  license+'MIT'
+  base+'forms'
+  glob-ames+[~winter-nallux-dozryl 0v5.7drje.q9kp4.712ff.gmlut.36q3q]
+==

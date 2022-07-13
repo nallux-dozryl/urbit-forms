@@ -7,7 +7,7 @@ const urbit = new Urbit("");
 // stores
 export const metas = writable(null);
 export const active = writable(null);
-export const responses = writable(null);
+export const submissions = writable(null);
 export const isAdmin = writable(false);
 export const isCreate = writable(null);
 export const requesting = writable(false);
@@ -43,6 +43,10 @@ export function requestForm(ship, data) {
 export function getForm(ship, addr) {
   urbit.ship = ship
   scryUrbit("/active/" + addr).then(res => active.set(res))
+}
+
+export function getSubmissions(id) {
+  scryUrbit("/submissions/" + id).then(res => submissions.set(res))
 }
 
 // internal only
@@ -175,6 +179,16 @@ export function deleteForm(data) {
   })
 }
 
+export function delSubmission(data) {
+  urbit.poke({
+      app: "forms",
+      mark: "forms-action",
+      json: {"delsubmission": data},
+      onSuccess: ()=>(console.log("submission deleted!")),
+      onError: ()=>(console.log("delete submission: error"))
+  })
+}
+
 export function addQuestion(data) {
   urbit.poke({
     app: "forms",
@@ -204,7 +218,7 @@ export function submitResponse(data) {
     mark: "forms-action",
     json: {submit: data},
     onSuccess: ()=>{
-      //window.location.href = "/apps/forms/"
+      window.location.href = "/apps/forms/"
       submitting.set(false)
     },
     onError: ()=>(console.log("error handling"))

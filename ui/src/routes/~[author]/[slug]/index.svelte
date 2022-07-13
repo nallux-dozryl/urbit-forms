@@ -1,7 +1,7 @@
 <script>
 
   import { onMount } from 'svelte'
-  import { active, isAdmin, getForm } from '../../../UrbitStore'
+  import { active, isAdmin, getForm, getSubmissions } from '../../../UrbitStore'
   import Buttons from '../../../FormHeader/Buttons.svelte'
   import Info from '../../../FormHeader/Info.svelte'
   import Section from '../../../FormBody/Section.svelte'
@@ -24,11 +24,11 @@
 </script>
 {#if $active}
   {#if $isAdmin}
-    <Buttons show={ship === $active[0].author}/>
+    <Buttons/>
     <Admin />
   {:else}
     <div>
-    <Buttons show={ship === $active[0].author}/>
+    <Buttons/>
       <Info />
       <Section />
     </div>

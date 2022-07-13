@@ -21,7 +21,21 @@
     (make-sections sections.upd)
     (make-sections draft.upd) 
     ==
+      %responses
+      =+  nd=+:(del:responses-1-orm responses-1.upd %draft) 
+      a+(turn ~(tap by nd) make-responses-1)
+      
   ==
+  ::
+  ++  make-responses-1
+    =,  enjs:format
+    |=  [k=response-id v=response-1]
+    %-  pairs
+    :~
+      ['rid' s+(scot %ud k)]
+      ['author' s+(crip +:(trip (scot %p submitter.v)))]
+      ['data' (make-sections sections.v)]
+    ==
   ::
   ++  make-sections
     |=  s=sections

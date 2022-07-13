@@ -94,9 +94,9 @@
         ~[[~[qtitle.v] ~ ~ 'essay-view']]
       ==
         %short
-      ['short-input' 'text' required.v 0 0 ~ ~ ~ (make-statements v)]
+      ['text-input' 'text' required.v 0 0 ~['short'] ~ ~ (make-statements v)]
         %long
-      ['essay-input' 'text' required.v 0 0 ~ ~ ~ (make-statements v)]
+      ['text-input' 'text' required.v 0 0 ~['essay'] ~ ~ (make-statements v)]
         %one
       ['one-input' 'text' required.v 0 0 x.v ~ ~ (make-statements v)]
         %grid-one

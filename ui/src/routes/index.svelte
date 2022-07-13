@@ -1,7 +1,7 @@
 <script>
 
   import { onMount } from 'svelte'
-  import { metas, initMetas, isCreate, createSurvey } from '../UrbitStore' 
+  import { metas, initMetas, isCreate, createSurvey, isAdmin } from '../UrbitStore' 
   import Request from '../Homepage/Request.svelte'
   import Create from '../Homepage/Create.svelte'
   import MyForms from '../Homepage/MyForms.svelte'
@@ -11,6 +11,7 @@
 
     onMount(()=> {
         initMetas(window.ship)
+        isAdmin.set(false)
     })
 
 </script>

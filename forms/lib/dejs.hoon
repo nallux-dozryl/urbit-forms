@@ -8,6 +8,7 @@
   %.  jon
   %-  of
     :~
+      delsubmission+(ot ~[id+(cu |=(x=@ta (slav %ud x)) so) rid+(cu |=(x=@ta (slav %ud x)) so)])
       submit+(ot ~[id+(cu |=(x=@ta (slav %ud x)) so)])
       delete+(ot ~[id+(cu |=(x=@ta (slav %ud x)) so)])
       :-  %ask

@@ -158,8 +158,8 @@
   }
 
   .loc {
+    text-align: center;
     flex: 1;
-    text-align: right;
     padding: .6em 0 .6em 0;
     font-size: .8em;
     font-weight: 500;

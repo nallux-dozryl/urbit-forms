@@ -6,7 +6,7 @@
     export let n
 
   function switchAccept() {
-      if ($active[1][n].sec[i].y.length > 0) {
+      if ($active[1][n].sec[i].y.length > 1) {
         return "list"  
         }
       return "text"
@@ -116,6 +116,16 @@
     width: 10em;
     border-radius: 4px;
     font-size: .8em;
+  }
+
+  .to-row:hover {
+    background: grey;
+    border-color: grey;
+    color: white;
+  }
+
+  .to-row:active {
+    background: black;
   }
 
   .del {

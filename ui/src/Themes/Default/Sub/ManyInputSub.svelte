@@ -1,80 +1,75 @@
 <script>
 
-  import { active, editDraft } from '/src/UrbitStore'
+  import NotAnswered from './NotAnswered.svelte'
+  import { afterUpdate } from 'svelte'
 
-    export let n, i
+  export let info, q
 
   let checkedStates = [];
-  let disabled = false;
-  let prompt = true;
 
-  if ($active[1][n].sec[i].accept === "grid") {
-      for (let i = 0; i < $active[1][n].sec[i].y.length; i++) {
-        checkedStates.push({ y: $active[1][n].sec[i].y[i], x: []})
-        for (let j = 0; j < $active[1][n].sec[i].x.length; j++) {
-          checkedStates[i].x.push(false)
+  $: checked = q.x.filter((_, i) => checkedStates[i]);
+
+  let gridChecked = []
+
+  afterUpdate(()=> {
+    handleChecks()  
+  })
+
+  function handleChecks() {
+    checkedStates = []
+    if (q.accept === "grid") { 
+      for (let i = 0; i < q.y.length; i++) {
+        checkedStates.push({ y: q.y[i], x: []})
+      
+        const exes = []
+        for (let w = 0; w < info.b.length; w++) {
+          if (info.b[w].y === q.y[i]) {
+            exes.push(info.b[w].x)
+          }
+        }
+        for (let h = 0; h < q.x.length; h++) {
+          if (exes.includes(q.x[h])) {
+            checkedStates[i].x.push(true)
+          } else {
+            checkedStates[i].x.push(false)
+          }
         }
       }
-    
-    } else if ($active[1][n].sec[i].accept === "list") {
-        for (let i = 0; i < $active[1][n].sec[i].x.length; i++) {
-       //if (q.answer.includes(q.x[i])) {
-       //   checkedStates.push(true)
-// } else {
-        checkedStates.push(false)
-//      }
-        }
     }
-
-  $: checked = $active[1][n].sec[i].x.filter((_, i) => checkedStates[i]);
-
-  function isWithin(min, max) {
-    const l = checked.length
-    if (max <= l) {
-        disabled = true;
-        prompt = false;
-    } else {
-        disabled = false;
-        prompt = true;
-    }
-  }
-
-  function editAnswer() {
-      const state = []
-      for (let i = 0; i < q.y.length; i++) {
-          for (let j = 0; j < q.x.length; j++) {
-            const x = q.x[j]
-            const y = q.y[i]
-            if (checkedStates[i].x[j]) {
-                state.push({x: x, y: y})
-            }
+    if (q.accept === "list") {
+      for (let g = 0; g < q.x.length; g++) {
+          if (info.a.includes(q.x[g])) {
+              checkedStates.push(true)
+          } else {
+              checkedStates.push(false)
           }
       }
+    }
   }
-
-  let q = $active[1][n].sec[i]
+    
+  handleChecks()
 
 </script>
-
-{#if q.y && (q.accept === "grid")}
+{#if (info.a[0] === undefined) && (info.b[0] === undefined)}
+  <NotAnswered />
+{:else if q.y.length > 0}
   <div class="container">
     <div class="header">
       <div class="col"></div>
-      {#each q.x as ox, i}
+      {#each q.x as ox, j}
         <div class="col">{ox}</div>
       {/each}
     </div>
-    {#each q.y as oy, j}
+    {#each q.y as oy, m}
       <div class="entry">
         <div class="loc">{oy}</div>
-        {#each q.x as ox, k}
+        {#each q.x as ox, n}
           <div class="col">
             <input
               class="loc"
               type="checkbox"
               name={ox}
-              bind:checked={checkedStates[j].x[k]}
-              on:change={editAnswer}
+              bind:checked={checkedStates[m].x[n]}
             />
           </div>
         {/each}
@@ -83,27 +78,17 @@
   </div>
 {:else}
   <div class="container">
-    {#each q.x as o, i}
+    {#each q.x as o, j}
       <div class="option">
-        {#if !checkedStates[i] && q.max <= checked.length}
           <input 
             type="checkbox" 
-            bind:checked={checkedStates[i]}
-            on:change={isWithin(q.min, q.max)} 
             name={o}
-            disabled
+            bind:checked={checkedStates[j]}
           />
-        {:else}
-          <input 
-            type="checkbox" 
-            bind:checked={checkedStates[i]}
-            on:change={isWithin(q.min, q.max)} 
-            name={o}
-          />
-        {/if}
         <div class="text">{o}</div>
       </div>
     {/each}
+    <!--
     {#if (prompt && (q.min === q.max)) && (0 < q.min + q.max)}
       Pick {q.max} options
     {:else if prompt && (q.min > checked.length)}
@@ -115,8 +100,13 @@
         Pick up to {q.max - checked.length} more option{q.max - checked.length > 1 ? "s" : ""}
       </div> 
     {/if}
+    -->
   </div>
 {/if}
+
+
+
+
 <style>
 
   .header {
@@ -137,8 +127,8 @@
   }
 
   .loc {
+    text-align: center;
     flex: 1;
-    text-align: right;
     padding: .6em 0 .6em 0;
     font-size: .8em;
     font-weight: 500;

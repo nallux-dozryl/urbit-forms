@@ -1,6 +1,7 @@
 <script>
 
   import { active, editDraft } from '/src/UrbitStore'
+  import { onMount } from 'svelte'
 
   export let n, i
 
@@ -28,29 +29,30 @@
     {month: "November", days:30}, 
     {month: "December", days:31}, 
   ]
-
-    if ($active[2][n].sec[i].b.length > 0) {
-      for (let k = 0; k < $active[2][n].sec[i].b.length; k++) {
-          if ($active[2][n].sec[i].b[k].x === "year") {
-            year = parseInt($active[2][n].sec[i].b[k].y)
-          }
-          if ($active[2][n].sec[i].b[k].x === "day") {
-            day = $active[2][n].sec[i].b[k].y  
-          }
-          if ($active[2][n].sec[i].b[k].x === "month") {
-            month = parseInt($active[2][n].sec[i].b[k].y)
-          }
-          if ($active[2][n].sec[i].b[k].x === "hour") {
-            hour = $active[2][n].sec[i].b[k].y  
-          }
-          if ($active[2][n].sec[i].b[k].x === "minute") {
-            minute = $active[2][n].sec[i].b[k].y  
-          }
-          if ($active[2][n].sec[i].b[k].x === "meridiem") {
-            mer = $active[2][n].sec[i].b[k].y  
-          }
-      }  
+    onMount(()=> {
+      if (($active[2][n].sec[i] !== undefined) && ($active[2][n].sec[i].b.length > 0)) {
+        for (let k = 0; k < $active[2][n].sec[i].b.length; k++) {
+            if ($active[2][n].sec[i].b[k].x === "year") {
+              year = parseInt($active[2][n].sec[i].b[k].y)
+            }
+            if ($active[2][n].sec[i].b[k].x === "day") {
+              day = $active[2][n].sec[i].b[k].y  
+            }
+            if ($active[2][n].sec[i].b[k].x === "month") {
+              month = parseInt($active[2][n].sec[i].b[k].y)
+            }
+            if ($active[2][n].sec[i].b[k].x === "hour") {
+              hour = $active[2][n].sec[i].b[k].y  
+            }
+            if ($active[2][n].sec[i].b[k].x === "minute") {
+              minute = $active[2][n].sec[i].b[k].y  
+            }
+            if ($active[2][n].sec[i].b[k].x === "meridiem") {
+              mer = $active[2][n].sec[i].b[k].y  
+            }
+        }  
       }
+    })
 
     function handleLeapYear() {
       if ((month == 2) && (year % 4 === 0)) {

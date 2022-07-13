@@ -59,7 +59,7 @@
     statements=(list statement)
   ==
 +$  submissions  ((mop survey-id responses-1) gth)
-+$  responses-1  (map response-id response-1)
++$  responses-1  ((mop response-id response-1) gth)
 +$  response-1   [=submitter =sections]
 +$  submitter  ?(ship %anon)
 +$  answer-1  [%answer accept=@tas datum]
@@ -106,6 +106,7 @@
     delete
     [%editdraft =survey-id =section-id =question-id =answer-1]
     submit
+    [%delsubmission =survey-id =response-id]
   ==
 +$  ask     [%ask =author =slug]
 +$  create  [%create =title =description =visibility =slug =rlimit]
@@ -119,8 +120,8 @@
     [%slug =slug]
     [%id =slug =survey-id]
     [%fail =slug]
-::               [%response =survey-id =response-id =answers]
-             ==
+    [%response =survey-id =response-id =response-1]
+  ==
 ::
 ::  Updates
 ::
@@ -134,8 +135,9 @@
 +$  frontend  
   $%
     [%header =header]
+    [%responses =responses-1]
     [%active =survey-id metadata=metadata-1 =sections draft=sections]
-::                [%responses =responses]
   ==
+::
 +$  cmd  json
 --

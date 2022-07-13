@@ -83,6 +83,7 @@
     -->
     </div>
   </div>
+  <!--
   <div class="section">
     <div class="title">Response Limit</div>
     <div class="arg">
@@ -90,6 +91,7 @@
       {rlimit === 0 ? "unlimited" : ""}
     </div>
   </div>
+  -->
   <button
     class="create {slug === "" ? "disabled" : ""}" 
     on:click={create}

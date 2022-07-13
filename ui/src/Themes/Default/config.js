@@ -16,6 +16,12 @@
   import ManyInputEdit from './Edits/ManyInputEdit.svelte'
   import CalInputEdit from './Edits/CalInputEdit.svelte'
  
+  import TextInputSub from './Sub/TextInputSub.svelte'
+  import RangeInputSub from './Sub/RangeInputSub.svelte'
+  import OneInputSub from './Sub/OneInputSub.svelte'
+  import ManyInputSub from './Sub/ManyInputSub.svelte'
+  import CalInputSub from './Sub/CalInputSub.svelte'
+
   export const statements = [
     { display: 'title-view', component: TitleView },
     { display: 'essay-view', component: EssayView },
@@ -28,6 +34,15 @@
     { display: "many-input",  component: ManyInput  },
     { display: "cal-input",   component: CalInput   },
   ]
+
+  export const subs = [
+    { display: "text-input", component: TextInputSub   },
+    { display: "range-input", component: RangeInputSub },
+    { display: "one-input",   component: OneInputSub   },
+    { display: "many-input",  component: ManyInputSub  },
+    { display: "cal-input",   component: CalInputSub   },
+  ]
+
   
   export const edits = [
     { display: 'title-view', component: TitleViewEdit   },

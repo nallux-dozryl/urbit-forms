@@ -1,23 +1,19 @@
 <script>
 
-  import { isAdmin } from '../UrbitStore'
-
-  export let show
-
+  import { isAdmin, formSettingsTab } from '../UrbitStore'
 
   function toggleEdit() {
     $isAdmin = !$isAdmin
+    formSettingsTab.set("details")
   }
 
 </script>
 <div class="container">
-  <a class="btn" href="/apps/forms">🢐 Menu</a>
-  {#if show}
-    {#if $isAdmin}
-      <button on:click={toggleEdit} class="btn func">Preview</button>
-    {:else}
-      <button on:click={toggleEdit} class="btn func">Edit</button>
-    {/if}
+  <a class="btn" href="/apps/forms">🢐 Home</a>
+  {#if $isAdmin}
+    <button on:click={toggleEdit} class="btn func">Preview</button>
+  {:else}
+    <button on:click={toggleEdit} class="btn func">Settings</button>
   {/if}
 </div>
 

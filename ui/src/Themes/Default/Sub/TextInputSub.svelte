@@ -1,40 +1,35 @@
 <script>
 
-  import { active, editDraft } from '/src/UrbitStore'
+  import NotAnswered from './NotAnswered.svelte'
 
-  export let n, i
-
-  function handleClick() {
-      const data = {
-        id: $active[0].id,
-        sid: n + 1,
-        qid: $active[1][n].sec[i].qid,
-        head: "answer",
-        accept: "text",
-        a: $active[2][n].sec[i].a,
-        b:[],
-        c:[]
-      }
-      editDraft(data)  
-  }
+  export let info, q
 
 </script>
-{#if $active[1][n].sec[i].x[0] === "short"}
+
+{#if (info.a[0] === undefined) || (info.a[0] === '')}
+  <NotAnswered />
+{:else if q.x[0] === "short"}
   <input
     type="text"
-    placeholder="Type your answer here"
-    bind:value={$active[2][n].sec[i].a[0]}
-    on:blur={handleClick}
+    value={info.a[0]}
+    disabled
   />
-{:else if $active[1][n].sec[i].x[0] === "essay"}
+{:else if q.x[0] === "essay"}
   <textarea 
     type="text"
     placeholder="Type your answer here"
-    bind:value={$active[2][n].sec[i].a[0]}
-    on:blur={handleClick}
+    bind:value={info.a[0]}
+    disabled
   />
 {/if} 
 <style>
+
+  .unanswered {
+    margin-top: 1em;
+    font-size: .8em;
+    font-weight: 600;
+    color: #666;
+  }
 
   input {
     border: none;

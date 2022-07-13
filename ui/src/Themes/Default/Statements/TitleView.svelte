@@ -4,11 +4,9 @@
   export let req = false
 
 </script>
-
 <div class="title">
   {x[0]}
 </div>
-
 <style>
 
   .title {

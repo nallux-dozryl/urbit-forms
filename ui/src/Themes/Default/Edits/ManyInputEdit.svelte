@@ -117,6 +117,16 @@
     font-size: .8em;
   }
 
+  .to-row:hover {
+    background: grey;
+    border-color: grey;
+    color: white;
+  }
+
+  .to-row:active {
+    background: black;
+  }
+
   .del {
     font-size: .6em;
     width: 2em;

@@ -11,6 +11,9 @@
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
 ::
+++  on-arvo   on-arvo:def
+++  on-fail   on-fail:def
+++  on-leave  on-leave:def
 ++  on-init
   ^-  (quip card _this)
   `this(slug-store (~(put by slug-store) our.bowl *slugs))
@@ -48,7 +51,6 @@
     ==  ==
   ==
 ::
-++  on-leave  on-leave:def
 ++  on-peek
   |=  =path
   ^-  (unit (unit cage))
@@ -61,10 +63,14 @@
     =+  m=(got:header-orm:fl header id)
     =+  s=(got:stuffing-orm:fl stuffing id)
     =+  sb=(got:submissions-orm:fl submissions id)
-    =+  d=sections:(~(got by sb) %draft)
+    =+  d=sections:(got:responses-1-orm:fl sb %draft)
     ``forms-json+!>(`frontend`active+[id m s d])
-
+      [%x %submissions @ ~]
+    =+  id=`survey-id`(slav %ud i.t.t.path)
+    =+  r=(got:submissions-orm:fl submissions id)
+    ``forms-json+!>(`frontend`responses+r)
   ==
+::
 ++  on-poke
   |=  [=mark =vase]
   ^-  (quip card _this)
@@ -151,7 +157,7 @@
         ::
         %editdraft
       =+  sb=(got:submissions-orm:fl submissions survey-id.act)
-      =+  sd=(~(got by sb) %draft)
+      =+  sd=(got:responses-1-orm:fl sb %draft)
       =+  sc=(get:sections-orm:fl sections.sd section-id.act)
       =+  x=?~(sc *section (need sc))
       =+  a=(put:section-orm:fl x question-id.act answer-1.act)
@@ -164,9 +170,29 @@
       =+  st=(got:stuffing-orm:fl stuffing survey-id.act)
       =+  sb=(got:submissions-orm:fl submissions survey-id.act)
       =+  rs=(~(got by sb) %draft)
-      ?:  =(~ (check-response:fl st +.rs))
-        `state
-      `state
+      =+  checked=(check-response:fl st +.rs)
+      =+  [n=0 failed=0]
+      |-
+      ?:  (gte n (lent checked))
+        ?<  (gth failed 0)
+        =+  id=(make-response-id:fl now.bowl our.bowl survey-id.act) 
+        =+  ss=(~(put by sb) id rs)
+        =+  sn=(~(put by ss) %draft [our.bowl *sections])
+        =+  survey-author=author:(got:header-orm:fl header survey-id.act)
+        :_  state(submissions (put:submissions-orm:fl submissions survey-id.act sn))
+        :~  :*
+          %pass   /submit
+          %agent  [survey-author %forms]
+          %poke   %forms-request  !>  response+[survey-id.act id rs]
+        ==  ==
+      =+  f=(lent failed:(snag n `(list [sec=@ud [failed=(list @ud) succeeded=(list @ud)]])`checked))
+      $(failed (add f failed), n +(n))
+        ::
+        %delsubmission
+      =+  sb=(got:submissions-orm:fl submissions survey-id.act)
+      =+  se=+:(del:responses-1-orm:fl sb response-id.act)
+      =+  sn=(put:submissions-orm:fl submissions survey-id.act se)
+      `state(submissions sn)
     ==
     ++  handle-edit
     |=  ed=edit
@@ -409,6 +435,19 @@
         %agent  [src.bowl %forms]
         %watch  /survey/(scot %ud survey-id.req)
       ==  ==
+        %response
+      =+  sb=(got:submissions-orm:fl submissions survey-id.req)
+      =+  st=(got:stuffing-orm:fl stuffing survey-id.req)
+      ?>  =(src.bowl -.response-1.req)
+      =+  checked=(check-response:fl st +.response-1.req)
+      =+  [n=0 failed=0]
+      |-
+      ?:  (gte n (lent checked))
+        ?<  (gth failed 0)
+        =+  sn=(~(put by sb) response-id.req response-1.req)
+        `state(submissions (put:submissions-orm:fl submissions survey-id.req sn))
+      =+  f=(lent failed:(snag n `(list [sec=@ud [failed=(list @ud) succeeded=(list @ud)]])`checked))
+      $(failed (add f failed), n +(n))
     ==
   --
 ++  on-agent
@@ -474,6 +513,4 @@
       ==
     ==
   ==
-++  on-arvo   on-arvo:def
-++  on-fail   on-fail:def
 --

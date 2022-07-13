@@ -5,12 +5,15 @@
   export let i
   export let n
 
+  
+
   function handleSwitch(type) {
       const  q = $active[1][n].sec[i]
       q["x"] = [type]
       active.set($active)
       q["id"] = $active[0].id
       q["sid"] = n + 1
+      q["accept"] = "grid"
       addQuestion(q)
   }
 
